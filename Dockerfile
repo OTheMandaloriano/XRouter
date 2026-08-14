@@ -18,7 +18,10 @@ RUN npm run build
 FROM ${NODE_IMAGE} AS runner
 WORKDIR /app
 
-LABEL org.opencontainers.image.title="9router"
+LABEL org.opencontainers.image.title="XRouter"
+LABEL org.opencontainers.image.description="Gateway de IA pessoal — fork personalizado do 9router (MIT)."
+LABEL org.opencontainers.image.source="https://github.com/OTheMandaloriano/XRouter"
+LABEL org.opencontainers.image.licenses="MIT"
 
 ENV NODE_ENV=production
 ENV PORT=20128

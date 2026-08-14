@@ -1,6 +1,6 @@
 {
   "name": "@othemandaloriano/xrouter",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "XRouter — gateway de IA pessoal: conecta Claude Code, Cursor, Cline, Copilot e mais a dezenas de provedores com fallback automatico. Fork personalizado do 9router.",
   "private": true,
   "author": "OTheMandaloriano",

@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Projeto original (9router)
+    url: https://github.com/decolua/9router
+    about: XRouter é um fork personalizado do 9router. Questões sobre o upstream vão aqui.
