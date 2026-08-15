@@ -8,7 +8,8 @@ import { useTheme } from "@/shared/hooks/useTheme";
 import { cn } from "@/shared/utils/cn";
 import { APP_CONFIG } from "@/shared/constants/config";
 import { LOCALE_COOKIE, normalizeLocale } from "@/i18n/config";
-import { LOCALE_FLAGS } from "@/shared/constants/locales";
+import { LOCALE_NAMES } from "@/shared/constants/locales";
+import FlagIcon from "@/shared/components/FlagIcon";
 
 function getLocaleFromCookie() {
   if (typeof document === "undefined") return "en";
@@ -849,7 +850,10 @@ export default function ProfilePage() {
             data-i18n-skip="true"
           >
             <span className="text-sm text-text-muted">Display language</span>
-            <span className="text-2xl">{LOCALE_FLAGS[locale] || "🌐"}</span>
+            <span className="flex items-center gap-2 text-sm font-medium text-text-main">
+              {LOCALE_NAMES[locale] || locale}
+              <FlagIcon locale={locale} style={{ fontSize: "1.25rem" }} />
+            </span>
           </button>
         </Card>
 
