@@ -14,8 +14,8 @@ function toRatesMap(data) {
   const rates = { USD: 1 };
   for (const k of Object.keys(data || {})) {
     const code = data[k]?.code;
-    const rate = data[k]?.rate;
-    if (code && typeof rate === "number" && rate > 0) rates[String(code).toUpperCase()] = rate;
+    const rate = parseFloat(data[k]?.rate); // FloatRates devolve rate como string
+    if (code && Number.isFinite(rate) && rate > 0) rates[String(code).toUpperCase()] = rate;
   }
   return rates;
 }
