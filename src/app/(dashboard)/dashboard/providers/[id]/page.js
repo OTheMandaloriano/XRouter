@@ -1662,17 +1662,25 @@ export default function ProviderDetailPage() {
             ].filter((m) => { const k = getModelKind(m); return !k || k === "llm"; }).map((m) => m.id);
             const activeIds = allIds.filter((id) => !disabledModelIds.includes(id));
             return (
-              <div className="flex gap-2">
-                {disabledModelIds.length > 0 && (
-                  <Button size="sm" variant="secondary" icon="restart_alt" onClick={handleEnableAll}>
-                    Active All
-                  </Button>
-                )}
-                {activeIds.length > 0 && (
-                  <Button size="sm" variant="secondary" icon="block" onClick={() => handleDisableAll(activeIds)}>
-                    Disable All
-                  </Button>
-                )}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={handleEnableAll}
+                  disabled={disabledModelIds.length === 0}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-green-500/40 text-xs font-medium text-green-600 dark:text-green-400 hover:border-green-500 hover:text-green-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  title="Enable every model of this provider"
+                >
+                  <span className="material-symbols-outlined text-sm">add</span>
+                  Add all
+                </button>
+                <button
+                  onClick={() => handleDisableAll(activeIds)}
+                  disabled={activeIds.length === 0}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-red-500/40 text-xs font-medium text-red-600 dark:text-red-400 hover:border-red-500 hover:text-red-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  title="Disable every model of this provider"
+                >
+                  <span className="material-symbols-outlined text-sm">remove</span>
+                  Remove all
+                </button>
               </div>
             );
           })()}
