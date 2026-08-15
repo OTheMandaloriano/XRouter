@@ -49,11 +49,19 @@ function forwardedHeaders(request, target) {
   return headers;
 }
 
-function rewriteDashboardHtml(html) {
-  return html.replace(
-    /fetch\('(?=\/(?:stats|health|stats-history|transformations\/feed))/g,
-    `fetch('${DASHBOARD_PREFIX}`,
-  );
+function rewriteHeadroomHtml(html) {
+  return html
+    // Internal navigation (e.g. <a href="/dashboard/settings">, back-to-dashboard link)
+    // is absolute in Headroom's HTML; keep it under the proxy prefix so it doesn't 404
+    // against the host app's own routes.
+    .replace(/href="\/dashboard/g, `href="${DASHBOARD_PREFIX}/dashboard`)
+    // Headroom's own API calls (stats/health/settings/transformations) must also go
+    // through the proxy. `stats` covers stats-history/stats-lifetime; `settings` covers
+    // settings/schema and settings/apply.
+    .replace(
+      /fetch\('(?=\/(?:stats|health|settings|transformations\/feed))/g,
+      `fetch('${DASHBOARD_PREFIX}`,
+    );
 }
 
 async function proxy(request, { params }) {
@@ -78,15 +86,15 @@ async function proxy(request, { params }) {
       if (HOP_BY_HOP_HEADERS.has(header.toLowerCase())) headers.delete(header);
     }
 
-    if (path.join("/") === "dashboard") {
-      const contentType = response.headers.get("content-type") || "";
-      if (contentType.includes("text/html")) {
-        headers.delete("content-length");
-        return new NextResponse(rewriteDashboardHtml(await response.text()), {
-          status: response.status,
-          headers,
-        });
-      }
+    // Any HTML page from Headroom (dashboard, settings, ...) gets its internal
+    // absolute links/fetches rewritten so navigation stays under the proxy prefix.
+    const contentType = response.headers.get("content-type") || "";
+    if (contentType.includes("text/html")) {
+      headers.delete("content-length");
+      return new NextResponse(rewriteHeadroomHtml(await response.text()), {
+        status: response.status,
+        headers,
+      });
     }
 
     return new NextResponse(response.body, { status: response.status, headers });
