@@ -16,6 +16,8 @@ import {
 import { getMitmStatus, startMitm, loadEncryptedPassword, initDbHooks, restoreToolDNS, removeAllDNSEntriesSync } from "@/mitm/manager";
 import { syncToJson as syncMitmAliasCache } from "@/lib/mitmAliasCache";
 import { killAllBridges } from "@/lib/mcp/stdioSseBridge";
+import { findHeadroomBinary, isLoopbackHeadroomUrl, DEFAULT_HEADROOM_URL } from "@/lib/headroom/detect";
+import { startHeadroomProxy, getManagedPid } from "@/lib/headroom/process";
 
 // Inject correct paths and DB hooks into manager.js (CJS) from ESM context
 (function bootstrapMitm() {
@@ -47,6 +49,7 @@ const g = global.__appSingleton ??= {
   mitmStartInProgress: false,
   tunnelAutoResumed: false,
   tailscaleAutoResumed: false,
+  headroomWatchdogInterval: null,
 };
 
 export async function initializeApp() {
@@ -105,6 +108,9 @@ async function runHeavyStartup() {
     autoStartMitm(settings);
   }
 
+  // Auto-start the Headroom compression proxy (enabled + installed) and keep it alive.
+  autoStartHeadroom();
+
   configureTunnelMonitoring(settings);
 
   if (hasQuotaAutoPingEnabled(settings)) {
@@ -155,6 +161,45 @@ async function autoStartMitm(settings) {
     console.log("[InitApp] MITM auto-start failed:", err.message);
   } finally {
     g.mitmStartInProgress = false;
+  }
+}
+
+function parseHeadroomPort(url) {
+  try {
+    const p = parseInt(new URL(url).port, 10);
+    if (p > 0 && p < 65536) return p;
+  } catch { /* ignore */ }
+  return 8787;
+}
+
+// Auto-start the Headroom compression proxy when enabled + installed, and keep it
+// alive (restart if it dies). The proxy is a detached process that survives 9router
+// restarts; this makes Headroom come up automatically with the panel, out of the box,
+// for everyone. Respects the `headroomEnabled` toggle on every tick.
+async function autoStartHeadroom() {
+  const ensure = async () => {
+    try {
+      const s = await getSettings();
+      if (s.headroomEnabled === false) return;              // toggle off -> leave it stopped
+      const url = s.headroomUrl || DEFAULT_HEADROOM_URL;
+      if (!isLoopbackHeadroomUrl(url)) return;              // external (Docker) proxy is managed elsewhere
+      if (!findHeadroomBinary()) return;                    // Headroom not installed -> nothing to start
+      if (getManagedPid()) return;                          // already running
+      await startHeadroomProxy({
+        port: parseHeadroomPort(url),
+        codeAware: s.headroomCodeAware === true,
+        kompress: s.headroomKompress !== false,
+      });
+      console.log("[InitApp] Headroom auto-started");
+    } catch (e) {
+      console.log("[InitApp] Headroom auto-start skipped:", e.message);
+    }
+  };
+  await ensure();
+  // Watchdog: keep Headroom up (restart if it drops), honoring the toggle.
+  if (!g.headroomWatchdogInterval) {
+    g.headroomWatchdogInterval = setInterval(() => { ensure().catch(() => {}); }, WATCHDOG_INTERVAL_MS);
+    if (g.headroomWatchdogInterval.unref) g.headroomWatchdogInterval.unref();
   }
 }
 
