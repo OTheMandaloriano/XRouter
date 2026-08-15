@@ -1162,14 +1162,7 @@ export default function ProviderDetailPage() {
           );
         })}
 
-        {/* Add model button — inline, same style as model chips */}
-        <button
-          onClick={() => setShowAddCustomModel(true)}
-          className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-primary/40 px-3 py-2 text-xs text-primary transition-colors hover:border-primary hover:bg-primary/5 sm:w-auto"
-        >
-          <span className="material-symbols-outlined text-sm">add</span>
-          Add Model
-        </button>
+        {/* "Add Model" moved to the header, next to Add all / Remove all */}
 
         {/* Import Qoder models button — only show for qoder provider */}
         {providerId === "qoder" && connections.some((conn) => conn.isActive !== false) && (
@@ -1663,6 +1656,14 @@ export default function ProviderDetailPage() {
             const activeIds = allIds.filter((id) => !disabledModelIds.includes(id));
             return (
               <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => setShowAddCustomModel(true)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-primary/40 text-xs font-medium text-primary hover:border-primary hover:bg-primary/5 transition-colors"
+                  title="Add a custom model"
+                >
+                  <span className="material-symbols-outlined text-sm">add</span>
+                  Add Model
+                </button>
                 <button
                   onClick={handleEnableAll}
                   disabled={disabledModelIds.length === 0}
