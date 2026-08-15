@@ -51,13 +51,13 @@ function RecentRequests({ requests = [] }) {
         <div className="flex-1 flex items-center justify-center text-text-muted text-sm">No requests yet.</div>
       ) : (
         <div className="flex-1 overflow-y-auto">
-          <table className="w-full min-w-[300px] border-collapse text-xs">
+          <table className="w-full min-w-[280px] border-collapse text-xs">
             <thead className="sticky top-0 bg-bg z-10">
               <tr className="border-b border-border">
-                <th className="py-1.5 text-left font-semibold text-text-muted w-2"></th>
-                <th className="py-1.5 text-left font-semibold text-text-muted">Model</th>
-                <th className="py-1.5 text-right font-semibold text-text-muted whitespace-nowrap">In / Out</th>
-                <th className="py-1.5 text-right font-semibold text-text-muted">When</th>
+                <th className="w-3 py-1.5 pl-1"></th>
+                <th className="py-1.5 pr-3 text-left font-semibold text-text-muted">Model</th>
+                <th className="py-1.5 px-3 text-right font-semibold text-text-muted whitespace-nowrap">In / Out</th>
+                <th className="py-1.5 pl-3 pr-1 text-right font-semibold text-text-muted whitespace-nowrap">When</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">
@@ -65,16 +65,18 @@ function RecentRequests({ requests = [] }) {
                 const ok = !r.status || r.status === "ok" || r.status === "success";
                 return (
                   <tr key={i} className="hover:bg-bg-subtle transition-colors">
-                    <td className="py-1.5">
+                    <td className="py-1.5 pl-1 align-middle">
                       <span className={`block w-1.5 h-1.5 rounded-full ${ok ? "bg-success" : "bg-error"}`} />
                     </td>
-                    <td className="py-1.5 font-mono truncate max-w-[120px]" title={r.model}>{r.model}</td>
-                    <td className="py-1.5 text-right whitespace-nowrap">
+                    <td className="py-1.5 pr-3 align-middle">
+                      <span className="block truncate font-mono max-w-[150px] lg:max-w-[220px]" title={r.model}>{r.model}</span>
+                    </td>
+                    <td className="py-1.5 px-3 text-right whitespace-nowrap align-middle">
                       <span className="text-primary">{fmt(r.promptTokens)}↑</span>
                       {" "}
                       <span className="text-success">{fmt(r.completionTokens)}↓</span>
                     </td>
-                    <td className="py-1.5 text-right text-text-muted whitespace-nowrap"><TimeAgo timestamp={r.timestamp} /></td>
+                    <td className="py-1.5 pl-3 pr-1 text-right text-text-muted whitespace-nowrap align-middle"><TimeAgo timestamp={r.timestamp} /></td>
                   </tr>
                 );
               })}

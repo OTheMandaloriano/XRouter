@@ -61,3 +61,15 @@ export const LOCALE_NAMES = {
   "sv": "Svenska", "it": "Italiano", "el": "Ελληνικά", "hu": "Magyar",
   "fi": "Suomi", "da": "Dansk", "no": "Norsk", "fa": "فارسی",
 };
+
+// Moeda (ISO 4217) por idioma/pais — usada p/ converter o custo estimado (base USD)
+// conforme o idioma selecionado. Varios idiomas da zona do euro usam EUR.
+export const LOCALE_CURRENCY = {
+  "en": "USD", "vi": "VND", "zh-CN": "CNY", "zh-TW": "TWD", "ja": "JPY",
+  "pt-BR": "BRL", "pt-PT": "EUR", "ko": "KRW", "es": "EUR", "de": "EUR",
+  "fr": "EUR", "he": "ILS", "ar": "SAR", "ru": "RUB", "pl": "PLN",
+  "cs": "CZK", "nl": "EUR", "tr": "TRY", "uk": "UAH", "tl": "PHP",
+  "id": "IDR", "th": "THB", "km": "KHR", "hi": "INR", "bn": "BDT",
+  "ur": "PKR", "ro": "RON", "sv": "SEK", "it": "EUR", "el": "EUR",
+  "hu": "HUF", "fi": "EUR", "da": "DKK", "no": "NOK", "fa": "IRR",
+};
