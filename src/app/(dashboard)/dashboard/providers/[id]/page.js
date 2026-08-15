@@ -557,6 +557,67 @@ export default function ProviderDetailPage() {
     }
   };
 
+  // ── Bulk model actions: "Add all" / "Remove all" over the FULL model set ──
+  // Covers built-in + Kilo-free (enable/disable) AND suggested/custom (add/remove),
+  // so no model is left behind for any provider.
+  const getLlmCatalog = () =>
+    [
+      ...models,
+      ...kiloFreeModels.filter((fm) => !models.some((m) => m.id === fm.id)),
+    ].filter((m) => { const k = getModelKind(m); return !k || k === "llm"; });
+
+  const getSuggestedNotAdded = () => {
+    const rows = getProviderCustomModelRows({
+      customModels, modelAliases, providerAlias: providerStorageAlias, builtInModels: models, type: "llm",
+    });
+    const addedFullModels = new Set([...Object.values(modelAliases), ...rows.map((m) => m.fullModel)]);
+    const hardcodedIds = new Set(models.map((m) => m.id));
+    return suggestedModels.filter(
+      (m) => !addedFullModels.has(`${providerStorageAlias}/${m.id}`) && !hardcodedIds.has(m.id)
+    );
+  };
+
+  // Add all: re-enable disabled built-in/free models AND add every suggested model not yet added.
+  const handleAddAllModels = async () => {
+    if (disabledModelIds.length > 0) await handleEnableAll();
+    for (const m of getSuggestedNotAdded()) {
+      await handleAddCustomModel(m.id, "llm", providerStorageAlias);
+    }
+  };
+
+  // Remove all: disable every active built-in/free model AND delete every custom/added model.
+  const handleRemoveAllModels = () => {
+    const activeIds = getLlmCatalog().map((m) => m.id).filter((id) => !disabledModelIds.includes(id));
+    const rows = getProviderCustomModelRows({
+      customModels, modelAliases, providerAlias: providerStorageAlias, builtInModels: models, type: "llm",
+    });
+    const total = activeIds.length + rows.length;
+    if (total === 0) return;
+    setConfirmState({
+      title: "Remove All Models",
+      message: `Remove all ${total} model(s) from this provider?`,
+      onConfirm: async () => {
+        setConfirmState(null);
+        try {
+          if (activeIds.length > 0) {
+            await fetch("/api/models/disabled", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ providerAlias: providerStorageAlias, ids: activeIds }),
+            });
+          }
+          for (const model of rows) {
+            if (model.source === "custom") await handleDeleteCustomModel(model.id, "llm", providerStorageAlias);
+            else await handleDeleteAlias(model.alias);
+          }
+          await fetchDisabledModels();
+        } catch (e) {
+          console.log("Error removing all models:", e);
+        }
+      },
+    });
+  };
+
   // Fetch Qoder model list and automatically add to available models
   const handleImportQoderModels = async () => {
     if (importingQoderModels) return;
@@ -1649,11 +1710,10 @@ export default function ProviderDetailPage() {
             )}
           </div>
           {!isCompatible && (() => {
-            const allIds = [
-              ...models,
-              ...kiloFreeModels.filter((fm) => !models.some((m) => m.id === fm.id)),
-            ].filter((m) => { const k = getModelKind(m); return !k || k === "llm"; }).map((m) => m.id);
-            const activeIds = allIds.filter((id) => !disabledModelIds.includes(id));
+            const activeIds = getLlmCatalog().map((m) => m.id).filter((id) => !disabledModelIds.includes(id));
+            const customRows = getProviderCustomModelRows({ customModels, modelAliases, providerAlias: providerStorageAlias, builtInModels: models, type: "llm" });
+            const canAdd = disabledModelIds.length > 0 || getSuggestedNotAdded().length > 0;
+            const canRemove = activeIds.length > 0 || customRows.length > 0;
             return (
               <div className="flex flex-wrap items-center gap-2">
                 <button
@@ -1665,19 +1725,19 @@ export default function ProviderDetailPage() {
                   Add Model
                 </button>
                 <button
-                  onClick={handleEnableAll}
-                  disabled={disabledModelIds.length === 0}
+                  onClick={handleAddAllModels}
+                  disabled={!canAdd}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-green-500/40 text-xs font-medium text-green-600 dark:text-green-400 hover:border-green-500 hover:text-green-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                  title="Enable every model of this provider"
+                  title="Add every model of this provider"
                 >
                   <span className="material-symbols-outlined text-sm">add</span>
                   Add all
                 </button>
                 <button
-                  onClick={() => handleDisableAll(activeIds)}
-                  disabled={activeIds.length === 0}
+                  onClick={handleRemoveAllModels}
+                  disabled={!canRemove}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-red-500/40 text-xs font-medium text-red-600 dark:text-red-400 hover:border-red-500 hover:text-red-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                  title="Disable every model of this provider"
+                  title="Remove every model of this provider"
                 >
                   <span className="material-symbols-outlined text-sm">remove</span>
                   Remove all
