@@ -4,9 +4,10 @@ import { useState, useEffect, useCallback, useMemo, Fragment } from "react";
 import PropTypes from "prop-types";
 import Card from "@/shared/components/Card";
 import Badge from "@/shared/components/Badge";
+import { useCurrency, formatCost } from "@/shared/utils/currency";
 
 const fmt = (n) => new Intl.NumberFormat().format(n || 0);
-const fmtCost = (n) => `$${(n || 0).toFixed(2)}`;
+const fmtCost = (n) => formatCost(n);
 
 function fmtTime(iso) {
   if (!iso) return "Never";
@@ -106,6 +107,7 @@ export default function UsageTable({
   renderSummaryCells,
   emptyMessage,
 }) {
+  useCurrency(); // re-renderiza na troca de moeda/idioma para converter as celulas de custo
   const [expanded, setExpanded] = useState(new Set());
 
   // Load expanded state from localStorage

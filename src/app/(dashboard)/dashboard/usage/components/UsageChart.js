@@ -13,6 +13,7 @@ import {
   Legend,
 } from "recharts";
 import Card from "@/shared/components/Card";
+import { useCurrency, formatCost } from "@/shared/utils/currency";
 
 const fmtTokens = (n) => {
   if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
@@ -20,12 +21,13 @@ const fmtTokens = (n) => {
   return String(n || 0);
 };
 
-const fmtCost = (n) => `$${(n || 0).toFixed(4)}`;
+const fmtCost = (n) => formatCost(n, { maximumFractionDigits: 4 });
 
 export default function UsageChart({ period = "7d" }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState("tokens");
+  useCurrency(); // re-renderiza na troca de moeda para converter eixo/tooltip de custo
 
   const fetchData = useCallback(async () => {
     setLoading(true);
