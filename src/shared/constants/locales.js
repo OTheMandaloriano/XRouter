@@ -36,3 +36,15 @@ export const LOCALE_FLAGS = {
   "no": "🇳🇴",
   "fa": "🇮🇷",
 };
+
+// Codigos de pais (ISO 3166-1 alpha-2, minusculo) para o flag-icons (lipis/flag-icons).
+// Emoji de bandeira NAO renderiza no Windows -> usamos SVG via classe `fi fi-<code>`.
+export const LOCALE_COUNTRY = {
+  "en": "us", "vi": "vn", "zh-CN": "cn", "zh-TW": "tw", "ja": "jp",
+  "pt-BR": "br", "pt-PT": "pt", "ko": "kr", "es": "es", "de": "de",
+  "fr": "fr", "he": "il", "ar": "sa", "ru": "ru", "pl": "pl",
+  "cs": "cz", "nl": "nl", "tr": "tr", "uk": "ua", "tl": "ph",
+  "id": "id", "th": "th", "km": "kh", "hi": "in", "bn": "bd",
+  "ur": "pk", "ro": "ro", "sv": "se", "it": "it", "el": "gr",
+  "hu": "hu", "fi": "fi", "da": "dk", "no": "no", "fa": "ir",
+};

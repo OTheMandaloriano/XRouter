@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { LOCALES, LOCALE_COOKIE, normalizeLocale } from "@/i18n/config";
 import { reloadTranslations } from "@/i18n/runtime";
+import FlagIcon from "@/shared/components/FlagIcon";
 
 function getLocaleFromCookie() {
   if (typeof document === "undefined") return "en";
@@ -99,7 +100,7 @@ export default function LanguageSwitcher({ className = "", isOpen: controlledOpe
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ locale: nextLocale }),
       });
-      
+
       // Reload translations without full page reload
       await reloadTranslations();
       setLocale(nextLocale);
@@ -124,7 +125,7 @@ export default function LanguageSwitcher({ className = "", isOpen: controlledOpe
         >
           <span className="material-symbols-outlined text-[20px]">language</span>
           <span className="text-sm font-medium">{getLocaleInfo(locale).name}</span>
-          <span className="text-lg">{getLocaleInfo(locale).flag}</span>
+          <FlagIcon locale={locale} style={{ fontSize: "1.125rem" }} />
         </button>
       )}
 
@@ -172,7 +173,7 @@ export default function LanguageSwitcher({ className = "", isOpen: controlledOpe
                       } ${isPending ? "opacity-70 cursor-wait" : ""}`}
                       title={info.name}
                     >
-                      <span className="text-2xl">{info.flag}</span>
+                      <FlagIcon locale={item} style={{ fontSize: "1.75rem" }} />
                       {/* Fixed 2-line height so all cards are uniform */}
                       <span className="text-center leading-tight line-clamp-2 h-8 flex items-center">{info.name}</span>
                       {active && (
