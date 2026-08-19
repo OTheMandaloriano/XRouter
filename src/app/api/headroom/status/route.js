@@ -5,11 +5,12 @@ import { getManagedPid } from "@/lib/headroom/process";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req) {
   try {
     const settings = await getSettings();
     const url = settings.headroomUrl || DEFAULT_HEADROOM_URL;
-    const status = await getHeadroomStatus(url);
+    const fresh = new URL(req.url).searchParams.get("fresh") === "1";
+    const status = await getHeadroomStatus(url, { fresh });
     const managedPid = getManagedPid();
     return NextResponse.json({ ...status, url, managedPid });
   } catch (error) {

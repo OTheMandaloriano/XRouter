@@ -123,10 +123,10 @@ export default function TokenSaverClient() {
     refreshHeadroomStatus();
   };
 
-  const refreshHeadroomStatus = useCallback(async () => {
+  const refreshHeadroomStatus = useCallback(async (fresh = false) => {
     setHeadroomStatus((s) => ({ ...s, loading: true }));
     try {
-      const res = await fetch("/api/headroom/status", {
+      const res = await fetch(fresh ? "/api/headroom/status?fresh=1" : "/api/headroom/status", {
         headers: { "Cache-Control": "no-store" },
       });
       const data = await res.json();
@@ -512,7 +512,7 @@ export default function TokenSaverClient() {
                 </a>
               </p>
               <span
-                className={`text-xs px-2 py-0.5 rounded ${headroomRunning ? "bg-success/15 text-success" : "bg-warning/15 text-warning"}`}
+                className={`text-xs px-2 py-0.5 rounded ${headroomStatus.loading ? "bg-black/5 text-text-muted dark:bg-white/5" : headroomRunning ? "bg-success/15 text-success" : "bg-warning/15 text-warning"}`}
               >
                 {headroomStatusLabel}
               </span>
@@ -789,7 +789,7 @@ export default function TokenSaverClient() {
           <div className="flex items-center justify-between text-sm">
             <span>Status</span>
             <span
-              className={headroomRunning ? "text-success" : "text-warning"}
+              className={headroomStatus.loading ? "text-text-muted" : headroomRunning ? "text-success" : "text-warning"}
             >
               {headroomStatusLabel}
             </span>
@@ -818,7 +818,9 @@ export default function TokenSaverClient() {
               like http://headroom:8787.
             </p>
           </div>
-          {headroomManaged ? (
+          {headroomStatus.loading ? (
+            <p className="text-sm text-text-muted">Checking…</p>
+          ) : headroomManaged ? (
             <Button
               onClick={handleHeadroomStop}
               variant="ghost"
@@ -872,7 +874,7 @@ export default function TokenSaverClient() {
           )}
           <div className="flex gap-2">
             <Button
-              onClick={() => refreshHeadroomStatus()}
+              onClick={() => refreshHeadroomStatus(true)}
               variant="ghost"
               fullWidth
             >

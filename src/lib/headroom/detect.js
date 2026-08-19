@@ -141,23 +141,56 @@ export function isLoopbackHeadroomUrl(url) {
   }
 }
 
-// Aggregate status for the dashboard: installed, running, python interpreter.
-export async function getHeadroomStatus(url) {
-  const path = findHeadroomBinary();
+// The binary/interpreter/extras probe spawns several python + pip processes
+// (findHeadroomBinary + findPython310 + pip list), which is slow on Windows and
+// made the dashboard "Checking…" badge linger for seconds on every page load. This
+// side of the status only changes when the user installs/removes Python or
+// headroom-ai, so we cache it briefly. `running` is always probed fresh below.
+const DETECT_TTL_MS = 60 * 1000;
+let detectCache = { at: 0, value: null };
+
+function detectInstall(force = false) {
+  if (!force && detectCache.value && Date.now() - detectCache.at < DETECT_TTL_MS) {
+    return detectCache.value;
+  }
+  const binPath = findHeadroomBinary();
   const python = findPython310();
-  const installed = Boolean(path);
-  const running = await probeProxyRunning(url);
-  const localUrl = isLoopbackHeadroomUrl(url);
-  const extrasStatus = installed ? getInstalledHeadroomExtras(python) : { installed: false, version: null, extras: { code: false, ml: false } };
-  return {
-    installed,
-    path,
-    running,
+  const installed = Boolean(binPath);
+  const extrasStatus = installed
+    ? getInstalledHeadroomExtras(python)
+    : { installed: false, version: null, extras: { code: false, ml: false } };
+  const value = {
+    path: binPath,
     python,
-    localUrl,
-    canStart: installed && localUrl,
+    installed,
     version: extrasStatus.version,
     extras: extrasStatus.extras,
+  };
+  detectCache = { at: Date.now(), value };
+  return value;
+}
+
+// Drop the cached install probe so the next status call re-detects from scratch.
+// Call after any action that installs/uninstalls headroom or its extras.
+export function invalidateHeadroomDetectCache() {
+  detectCache = { at: 0, value: null };
+}
+
+// Aggregate status for the dashboard: installed, running, python interpreter.
+// Pass { fresh: true } to bypass the install cache (e.g. the manual "Recheck" button).
+export async function getHeadroomStatus(url, { fresh = false } = {}) {
+  const det = detectInstall(fresh);
+  const running = await probeProxyRunning(url);
+  const localUrl = isLoopbackHeadroomUrl(url);
+  return {
+    installed: det.installed,
+    path: det.path,
+    running,
+    python: det.python,
+    localUrl,
+    canStart: det.installed && localUrl,
+    version: det.version,
+    extras: det.extras,
   };
 }
 
