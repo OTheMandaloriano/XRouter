@@ -84,8 +84,9 @@ export default function ProfilePage() {
 
   useEffect(() => {
     fetch("/api/settings")
-      .then((res) => res.json())
+      .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
+        if (!data || data.error) { setLoading(false); return; }
         setSettings(data);
         setOidcForm({
           authMode: data?.authMode || "password",
@@ -124,6 +125,41 @@ export default function ProfilePage() {
         setLoading(false);
       });
   }, []);
+
+  const saveBackup = async (patch) => {
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch),
+      });
+      const data = await res.json();
+      if (res.ok) setSettings((prev) => ({ ...prev, ...data }));
+    } catch (e) {
+      console.error("saveBackup failed:", e);
+    }
+  };
+
+  const [pickingFolder, setPickingFolder] = useState(false);
+  const handlePickBackupFolder = async () => {
+    setPickingFolder(true);
+    try {
+      const res = await fetch("/api/settings/pick-folder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ initial: settings.autoBackupDir || settings.defaultBackupDir || "" }),
+      });
+      const data = await res.json();
+      if (data.path) {
+        setSettings((prev) => ({ ...prev, autoBackupDir: data.path }));
+        await saveBackup({ autoBackupDir: data.path });
+      }
+    } catch (e) {
+      console.error("pick backup folder failed:", e);
+    } finally {
+      setPickingFolder(false);
+    }
+  };
 
   const updateOutboundProxy = async (e) => {
     e.preventDefault();
@@ -798,7 +834,7 @@ export default function ProfilePage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 rounded-lg bg-bg border border-border gap-2">
               <div>
                 <p className="font-medium text-sm sm:text-base">Database Location</p>
-                <p className="text-xs sm:text-sm text-text-muted font-mono break-all">~/.9router/db/data.sqlite</p>
+                <p className="text-xs sm:text-sm text-text-muted font-mono break-all">{settings.dbPath ? settings.dbPath : "Carregando..."}</p>
               </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
@@ -827,6 +863,46 @@ export default function ProfilePage() {
                 className="hidden"
                 onChange={handleImportDatabase}
               />
+            </div>
+            {/* Backup automatico do banco */}
+            <div className="flex flex-col gap-3 pt-3 mt-1 border-t border-border">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-medium text-sm">Backup automático</p>
+                  <p className="text-xs text-text-muted">Faz backup só quando o banco muda, no intervalo escolhido. Guarda os últimos {settings.autoBackupKeep || 30}.</p>
+                </div>
+                <Toggle
+                  checked={settings.autoBackupEnabled !== false}
+                  onChange={() => saveBackup({ autoBackupEnabled: settings.autoBackupEnabled === false })}
+                />
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-text-muted">Intervalo</label>
+                  <select
+                    value={String(settings.autoBackupIntervalMinutes ?? 5)}
+                    onChange={(e) => saveBackup({ autoBackupIntervalMinutes: Number(e.target.value) })}
+                    className="rounded-md border border-border bg-bg px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                  >
+                    <option value="1">1 min</option>
+                    <option value="5">5 min</option>
+                    <option value="15">15 min</option>
+                    <option value="30">30 min</option>
+                    <option value="60">1 hora</option>
+                  </select>
+                </div>
+                <div className="flex flex-1 flex-col gap-1">
+                  <label className="text-xs text-text-muted">Pasta do backup</label>
+                  <div className="flex gap-2">
+                    <div className="flex flex-1 items-center min-h-[38px] rounded-md border border-border bg-bg px-3 py-2 font-mono text-xs text-text-muted break-all">
+                      {settings.autoBackupDir || settings.defaultBackupDir || "Documentos/XRouter-backups"}
+                    </div>
+                    <Button size="sm" variant="secondary" icon="folder_open" onClick={handlePickBackupFolder} loading={pickingFolder}>
+                      Escolher
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
             {dbStatus.message && (
               <p className={`text-sm ${dbStatus.type === "error" ? "text-red-500" : "text-green-600 dark:text-green-400"}`}>

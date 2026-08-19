@@ -124,6 +124,11 @@ async function runHeavyStartup() {
   import("@/sse/services/backgroundTokenRefresh.js")
     .then(({ startBackgroundTokenRefresh }) => startBackgroundTokenRefresh())
     .catch((e) => console.log("[BackgroundTokenRefresh] scheduler start failed:", e.message));
+
+  // Backup automatico do banco: so grava quando o banco muda, no intervalo configurado.
+  import("@/shared/services/autoBackup")
+    .then(({ startAutoBackup }) => startAutoBackup())
+    .catch((e) => console.log("[AutoBackup] start failed:", e.message));
 }
 
 function hasQuotaAutoPingEnabled(settings) {

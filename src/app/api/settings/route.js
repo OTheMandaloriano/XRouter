@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
+import path from "path";
+import os from "os";
 import { getSettings, updateSettings } from "@/lib/localDb";
+import { DATA_DIR } from "@/lib/dataDir";
 import { applyOutboundProxyEnv } from "@/lib/network/outboundProxy";
 import { resetComboRotation } from "open-sse/services/combo.js";
 import bcrypt from "bcryptjs";
@@ -23,11 +26,15 @@ export async function GET() {
     const enableRequestLogs = process.env.ENABLE_REQUEST_LOGS === "true";
     const enableTranslator = process.env.ENABLE_TRANSLATOR === "true";
     
-    return NextResponse.json({ 
-      ...safeSettings, 
+    return NextResponse.json({
+      ...safeSettings,
       enableRequestLogs,
       enableTranslator,
-      hasPassword: !!password
+      hasPassword: !!password,
+      // Caminho REAL do banco (resolve DATA_DIR) e a pasta padrao de backup,
+      // pra tela mostrar o certo em vez de um texto fixo.
+      dbPath: path.join(DATA_DIR, "db", "data.sqlite"),
+      defaultBackupDir: path.join(os.homedir(), "Documents", "XRouter-backups"),
     }, { headers: SETTINGS_RESPONSE_HEADERS });
   } catch (error) {
     console.log("Error getting settings:", error);

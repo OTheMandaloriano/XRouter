@@ -61,6 +61,12 @@ const DEFAULT_SETTINGS = {
   pxpipeAutoInstall: true,
   pxpipeMinChars: 25000,
   pxpipeTimeoutMs: 15000,
+  // Backup automatico do banco: so faz backup quando o banco muda, no intervalo
+  // escolhido. autoBackupDir vazio = padrao (Documentos/XRouter-backups).
+  autoBackupEnabled: true,
+  autoBackupIntervalMinutes: 5,
+  autoBackupDir: "",
+  autoBackupKeep: 30,
 };
 
 async function readRaw() {
