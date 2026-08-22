@@ -13,13 +13,15 @@ const STARTUP_TIMEOUT_MS = 8000;
 const MAX_LOG_BYTES = 50 * 1024 * 1024; // 50 MB cap so headroom's proxy.log can never fill the disk
 
 // headroom's stdout/stderr is redirected to proxy.log in append mode with no
-// bound, so a long-running proxy can grow it to tens of GB. Truncate it once it
-// passes the cap. The fd is O_APPEND, so the live proxy keeps appending from
-// offset 0 (no sparse gap). Best effort: logging must never break the proxy.
+// bound, so a long-running proxy can grow it to tens of GB. Once it passes the
+// cap, archive the recent chunk to proxy.log.old and reset the live log to 0.
+// The fd is O_APPEND, so the proxy keeps appending from offset 0 (no sparse gap).
+// Best effort: logging must never break the proxy.
 function capLogFile() {
   try {
     if (!fs.existsSync(LOG_FILE)) return;
     if (fs.statSync(LOG_FILE).size <= MAX_LOG_BYTES) return;
+    try { fs.copyFileSync(LOG_FILE, LOG_FILE + ".old"); } catch { /* archive is optional */ }
     fs.truncateSync(LOG_FILE, 0);
   } catch { /* best effort */ }
 }
