@@ -10,6 +10,26 @@ const LOG_FILE = path.join(HEADROOM_DIR, "proxy.log");
 const INSTALL_LOG_FILE = path.join(HEADROOM_DIR, "install.log");
 const DEFAULT_PORT = 8787;
 const STARTUP_TIMEOUT_MS = 8000;
+const MAX_LOG_BYTES = 50 * 1024 * 1024; // 50 MB cap so headroom's proxy.log can never fill the disk
+
+// headroom's stdout/stderr is redirected to proxy.log in append mode with no
+// bound, so a long-running proxy can grow it to tens of GB. Truncate it once it
+// passes the cap. The fd is O_APPEND, so the live proxy keeps appending from
+// offset 0 (no sparse gap). Best effort: logging must never break the proxy.
+function capLogFile() {
+  try {
+    if (!fs.existsSync(LOG_FILE)) return;
+    if (fs.statSync(LOG_FILE).size <= MAX_LOG_BYTES) return;
+    fs.truncateSync(LOG_FILE, 0);
+  } catch { /* best effort */ }
+}
+
+let logCapTimer = null;
+function startLogCapTimer() {
+  if (logCapTimer) return;
+  logCapTimer = setInterval(capLogFile, 60000);
+  if (typeof logCapTimer.unref === "function") logCapTimer.unref();
+}
 
 function ensureDir() {
   if (!fs.existsSync(HEADROOM_DIR)) fs.mkdirSync(HEADROOM_DIR, { recursive: true });
@@ -65,6 +85,7 @@ export async function startHeadroomProxy({ port = DEFAULT_PORT, codeAware = fals
   if (existing) return { pid: existing, alreadyRunning: true };
 
   ensureDir();
+  capLogFile(); // drop a stale oversized log before reopening for append
   // spawn stdio requires fd numbers, not WriteStream objects.
   const outFd = fs.openSync(LOG_FILE, "a");
 
@@ -105,6 +126,8 @@ export async function startHeadroomProxy({ port = DEFAULT_PORT, codeAware = fals
 
   // Close parent's copy of the fd; child retains its own after unref.
   fs.closeSync(outFd);
+
+  startLogCapTimer(); // keep proxy.log bounded while the proxy runs
 
   return { pid: child.pid, alreadyRunning: false };
 }
