@@ -67,6 +67,8 @@ export default function ProviderDetailPage() {
   const [thinkingMode, setThinkingMode] = useState("auto");
   const [autoPing, setAutoPing] = useState({ enabled: false, connections: {} });
   const [suggestedModels, setSuggestedModels] = useState([]);
+  const [syncingModels, setSyncingModels] = useState(false);
+  const [syncModelsMsg, setSyncModelsMsg] = useState("");
   const [liveModels, setLiveModels] = useState([]);
   const [kiloFreeModels, setKiloFreeModels] = useState([]);
   const [disabledModelIds, setDisabledModelIds] = useState([]);
@@ -492,6 +494,34 @@ export default function ProviderDetailPage() {
     if (!fetcher) return;
     fetchSuggestedModels(fetcher).then(setSuggestedModels);
   }, [providerId]);
+
+  // Este provedor expoe um catalogo ao vivo (modelsFetcher)?
+  const hasModelsFetcher = !!(
+    (OAUTH_PROVIDERS[providerId] || APIKEY_PROVIDERS[providerId] || FREE_PROVIDERS[providerId] || FREE_TIER_PROVIDERS[providerId])?.modelsFetcher
+  );
+
+  // Sincroniza o catalogo (POST /api/models/sync) e recarrega pra refletir a poda.
+  const handleSyncModels = async () => {
+    setSyncingModels(true);
+    setSyncModelsMsg("");
+    try {
+      const res = await fetch("/api/models/sync", { method: "POST" });
+      const json = await res.json();
+      if (json?.ok) {
+        const mine = (json.results || []).find((r) => r.alias === providerStorageAlias || r.provider === providerId);
+        setSyncModelsMsg(mine
+          ? `Sincronizado: removidos ${mine.removed.length}, novos disponiveis ${mine.added.length}`
+          : "Sincronizado.");
+        setTimeout(() => window.location.reload(), 900);
+      } else {
+        setSyncModelsMsg("Falha ao sincronizar.");
+      }
+    } catch {
+      setSyncModelsMsg("Falha ao sincronizar.");
+    } finally {
+      setSyncingModels(false);
+    }
+  };
 
   const handleSetAlias = async (modelId, alias, providerAliasOverride = providerAlias) => {
     const fullModel = `${providerAliasOverride}/${modelId}`;
@@ -1742,12 +1772,28 @@ export default function ProviderDetailPage() {
                   <span className="material-symbols-outlined text-sm">remove</span>
                   Remove all
                 </button>
+                {hasModelsFetcher && (
+                  <button
+                    onClick={handleSyncModels}
+                    disabled={syncingModels}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-blue-500/40 text-xs font-medium text-blue-600 dark:text-blue-400 hover:border-blue-500 hover:text-blue-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    title="Re-fetch the provider catalog and remove models that no longer exist"
+                  >
+                    <span className="material-symbols-outlined text-sm" style={syncingModels ? { animation: "spin 1s linear infinite" } : undefined}>
+                      {syncingModels ? "progress_activity" : "sync"}
+                    </span>
+                    {syncingModels ? "Sincronizando..." : "Sincronizar"}
+                  </button>
+                )}
               </div>
             );
           })()}
         </div>
         {!!modelsTestError && (
           <p className="text-xs text-red-500 mb-3 break-words">{modelsTestError}</p>
+        )}
+        {!!syncModelsMsg && (
+          <p className="text-xs text-blue-500 mb-3 break-words">{syncModelsMsg}</p>
         )}
         {renderModelsSection()}
       </Card>
