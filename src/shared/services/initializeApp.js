@@ -129,6 +129,11 @@ async function runHeavyStartup() {
   import("@/shared/services/autoBackup")
     .then(({ startAutoBackup }) => startAutoBackup())
     .catch((e) => console.log("[AutoBackup] start failed:", e.message));
+
+  // Auto-sync de modelos: remove os que sumiram do catalogo dos provedores e avisa.
+  import("@/shared/services/modelSync")
+    .then(({ startModelSync }) => startModelSync())
+    .catch((e) => console.log("[ModelSync] start failed:", e.message));
 }
 
 function hasQuotaAutoPingEnabled(settings) {
