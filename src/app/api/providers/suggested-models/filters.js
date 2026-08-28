@@ -23,4 +23,9 @@ export const FILTERS = {
     (Array.isArray(models) ? models : [])
       .filter((m) => m.id?.startsWith("mimo") || m.name?.toLowerCase().includes("mimo"))
       .map((m) => ({ id: m.id, name: m.name || m.id })),
+
+  "orcarouter-free": (models) =>
+    (Array.isArray(models) ? models : [])
+      .filter((m) => typeof m.id === "string" && (m.id.endsWith("-free") || m.id.endsWith(":free") || m.id === "orcarouter/free"))
+      .map((m) => ({ id: m.id, name: m.id })),
 };
