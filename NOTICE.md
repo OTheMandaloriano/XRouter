@@ -14,6 +14,5 @@ Modificações e personalizações neste repositório:
 - Copyright (c) 2026 **OTheMandaloriano**
 - Distribuídas também sob a Licença MIT.
 
-O histórico e a documentação originais foram preservados em:
-- [README.upstream.md](./README.upstream.md)
+O histórico original foi preservado em:
 - [CHANGELOG.upstream.md](./CHANGELOG.upstream.md)
