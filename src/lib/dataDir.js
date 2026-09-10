@@ -1,4 +1,4 @@
-import fs from "node:fs";
+﻿import fs from "node:fs";
 import path from "path";
 import os from "os";
 
@@ -6,13 +6,14 @@ const APP_NAME = "9router";
 
 function defaultDir() {
   if (process.platform === "win32") {
-    return path.join(process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming"), APP_NAME);
+    // Padrão organizado e profissional na pasta Documentos do usuário
+    return path.join(os.homedir(), "Documents", "XRouter");
   }
   return path.join(os.homedir(), `.${APP_NAME}`);
 }
 
 export function getDataDir() {
-  const configured = process.env.DATA_DIR;
+  const configured = (process.env.DATA_DIR || "").trim();
   if (!configured) return defaultDir();
 
   // On Windows, ignore Unix-style absolute paths (e.g. /var/lib/...) that come
@@ -27,7 +28,7 @@ export function getDataDir() {
     return configured;
   } catch (e) {
     if (e?.code === "EACCES" || e?.code === "EPERM") {
-      console.warn(`[DATA_DIR] '${configured}' not writable → fallback ~/.${APP_NAME}`);
+      console.warn(`[DATA_DIR] '${configured}' not writable → fallback`);
       return defaultDir();
     }
     throw e;

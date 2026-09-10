@@ -14,10 +14,10 @@ const APP_NAME = "9router";
 
 // Resolve o data dir do mesmo jeito que src/lib/dataDir.js (DATA_DIR ou default).
 function getDataDir() {
-  const c = process.env.DATA_DIR;
+  const c = (process.env.DATA_DIR || "").trim();
   if (c && !(process.platform === "win32" && /^\//.test(c))) return c;
   if (process.platform === "win32") {
-    return path.join(process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming"), APP_NAME);
+    return path.join(os.homedir(), "Documents", "XRouter");
   }
   return path.join(os.homedir(), "." + APP_NAME);
 }

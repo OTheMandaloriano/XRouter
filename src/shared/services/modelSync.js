@@ -1,13 +1,13 @@
 // Auto-sync de modelos dos provedores.
-// Reconcilia os modelos habilitados (settings.customModels) com o catalogo ao vivo
-// de cada provedor que expoe um modelsFetcher (opencode-free, openrouter-free,
-// mimo-free). Remove SO os modelos que sumiram do catalogo; NUNCA remove quando a
-// busca do catalogo falha ou volta vazia (evita zerar tudo quando a fonte cai).
+// Reconcilia os modelos habilitados (customModels) com o catalogo ao vivo
+// de cada provedor que expoe um modelsFetcher (opencode, opencode-zen, openrouter,
+// orcarouter, mimo-free, kilocode). Adiciona os novos e remove SO os modelos que sumiram do catalogo;
+// NUNCA remove quando a busca do catalogo falha ou volta vazia (evita zerar tudo quando a fonte cai).
 // Registra um aviso por mudanca no Console Log. Roda no start e a cada SYNC_INTERVAL_MS.
 
 import registry from "open-sse/providers/registry/index.js";
 import { FILTERS } from "@/app/api/providers/suggested-models/filters.js";
-import { getSettings, updateSettings } from "@/lib/localDb";
+import { getCustomModels, addCustomModel, deleteCustomModel, getSettings, updateSettings } from "@/lib/localDb";
 import * as log from "@/sse/utils/logger.js";
 
 const SYNC_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6h
@@ -42,14 +42,11 @@ function fetchableProviders() {
   return registry.filter((p) => p?.modelsFetcher && FILTERS[p.modelsFetcher.type]);
 }
 
-// Reconcilia todos os provedores com catalogo. Poda os modelos mortos num UNICO
-// write de settings (merge). Retorna um resumo por provedor
-// [{ provider, alias, removed:[ids], added:[ids] }].
+// Reconcilia todos os provedores com catalogo.
+// Salva os novos modelos adicionados no banco de dados e remove modelos descontinuados.
 export async function syncAllProviderModels({ prune = true } = {}) {
-  const settings = await getSettings();
-  const customModels = Array.isArray(settings.customModels) ? settings.customModels : [];
+  const customModels = await getCustomModels();
   const results = [];
-  const gone = new Set(); // pares `${alias}::${id}` a remover
 
   for (const p of fetchableProviders()) {
     const catalog = await fetchCatalog(p.modelsFetcher);
@@ -57,27 +54,59 @@ export async function syncAllProviderModels({ prune = true } = {}) {
 
     const catalogIds = new Set(catalog.map((m) => m.id));
     const aliases = providerAliases(p);
+    const alias = p.uiAlias || p.alias || p.id;
     const enabled = customModels.filter((m) => m?.id && aliases.has(m.providerAlias));
     const enabledIds = new Set(enabled.map((m) => m.id));
+    const builtInIds = new Set((p.models || []).map((m) => m.id));
 
     const removed = enabled.filter((m) => !catalogIds.has(m.id)).map((m) => m.id);
-    const added = catalog.filter((m) => !enabledIds.has(m.id)).map((m) => m.id);
-    const alias = p.uiAlias || p.alias || p.id;
+    const addedModels = catalog.filter((m) => !enabledIds.has(m.id) && !builtInIds.has(m.id));
+
+    // 1. Auto-adiciona novos modelos descobertos no catalogo vivo
+    for (const nm of addedModels) {
+      try {
+        await addCustomModel({
+          providerAlias: alias,
+          id: nm.id,
+          name: nm.name || nm.id,
+          type: "llm",
+        });
+      } catch (err) {
+        log.warn("MODEL-SYNC", `Erro ao salvar modelo ${nm.id}: ${err.message}`);
+      }
+    }
+
+    // 2. Remove modelos customizados descontinuados
+    if (prune && removed.length > 0) {
+      for (const rmId of removed) {
+        try {
+          await deleteCustomModel({
+            providerAlias: alias,
+            id: rmId,
+            type: "llm",
+          });
+        } catch (err) {
+          log.warn("MODEL-SYNC", `Erro ao deletar modelo descontinuado ${rmId}: ${err.message}`);
+        }
+      }
+    }
+
+    const added = addedModels.map((m) => m.id);
     results.push({ provider: p.id, alias, removed, added });
 
     if (removed.length || added.length) {
       log.warn("MODEL-SYNC", `[${alias}] sumiram=[${removed.join(", ") || "-"}] novos=[${added.join(", ") || "-"}]`);
     }
-    for (const id of removed) for (const a of aliases) gone.add(`${a}::${id}`);
   }
 
-  if (prune && gone.size > 0) {
-    const kept = customModels.filter((m) => !(m?.id && gone.has(`${m.providerAlias}::${m.id}`)));
-    if (kept.length !== customModels.length) {
-      await updateSettings({ customModels: kept });
-      log.warn("MODEL-SYNC", `removidos ${customModels.length - kept.length} modelo(s) morto(s) de customModels`);
+  // Backup sync to legacy settings.customModels if present
+  try {
+    const settings = await getSettings();
+    if (settings && Array.isArray(settings.customModels)) {
+      const freshCustom = await getCustomModels();
+      await updateSettings({ customModels: freshCustom });
     }
-  }
+  } catch { /* ignore */ }
 
   return results;
 }

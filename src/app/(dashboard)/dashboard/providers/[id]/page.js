@@ -11,7 +11,7 @@ import { getModelsByProviderId, getModelKind } from "@/shared/constants/models";
 import { getThinkingLevels } from "open-sse/providers/thinkingLevels.js";
 import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
 import { useModelCaps } from "@/shared/hooks/useModelCaps";
-import { translate } from "@/i18n/runtime";
+import { translate, onLocaleChange } from "@/i18n/runtime";
 import { fetchSuggestedModels } from "@/shared/utils/providerModelsFetcher";
 import { getProviderCustomModelRows } from "@/shared/utils/providerCustomModels";
 import ModelRow from "./ModelRow";
@@ -35,6 +35,10 @@ function sleep(ms) {
 }
 
 export default function ProviderDetailPage() {
+  const [, setLocaleTick] = useState(0);
+  useEffect(() => {
+    return onLocaleChange(() => setLocaleTick((t) => t + 1));
+  }, []);
   const params = useParams();
   const router = useRouter();
   const providerId = params.id;
@@ -69,6 +73,10 @@ export default function ProviderDetailPage() {
   const [suggestedModels, setSuggestedModels] = useState([]);
   const [syncingModels, setSyncingModels] = useState(false);
   const [syncModelsMsg, setSyncModelsMsg] = useState("");
+  const [testingAllModels, setTestingAllModels] = useState(false);
+  const [testAllProgress, setTestAllProgress] = useState({ current: 0, total: 0 });
+  const [testAllSummaryMsg, setTestAllSummaryMsg] = useState("");
+  const abortTestAllRef = useRef(false);
   const [liveModels, setLiveModels] = useState([]);
   const [kiloFreeModels, setKiloFreeModels] = useState([]);
   const [disabledModelIds, setDisabledModelIds] = useState([]);
@@ -490,6 +498,10 @@ export default function ProviderDetailPage() {
 
   // Fetch suggested models from provider's public API (if configured)
   useEffect(() => {
+    abortTestAllRef.current = true;
+    setTestingAllModels(false);
+    setTestAllSummaryMsg("");
+    setTestAllProgress({ current: 0, total: 0 });
     const fetcher = (OAUTH_PROVIDERS[providerId] || APIKEY_PROVIDERS[providerId] || FREE_PROVIDERS[providerId] || FREE_TIER_PROVIDERS[providerId])?.modelsFetcher;
     if (!fetcher) return;
     fetchSuggestedModels(fetcher).then(setSuggestedModels);
@@ -500,30 +512,183 @@ export default function ProviderDetailPage() {
     (OAUTH_PROVIDERS[providerId] || APIKEY_PROVIDERS[providerId] || FREE_PROVIDERS[providerId] || FREE_TIER_PROVIDERS[providerId])?.modelsFetcher
   );
 
-  // Sincroniza o catalogo (POST /api/models/sync) e recarrega pra refletir a poda.
+      // Sincroniza o catalogo ao vivo: adiciona novos modelos e desativa/remove modelos descontinuados.
   const handleSyncModels = async () => {
     setSyncingModels(true);
     setSyncModelsMsg("");
     try {
+      let addedCount = 0;
+      let removedCount = 0;
+      let disabledCount = 0;
+      let restoredCount = 0;
+      let connQueried = false;
+      let connFailed = false;
+
+      // 1. Sincroniza catalogo global em background
       const res = await fetch("/api/models/sync", { method: "POST" });
-      const json = await res.json();
-      if (json?.ok) {
-        const mine = (json.results || []).find((r) => r.alias === providerStorageAlias || r.provider === providerId);
-        setSyncModelsMsg(mine
-          ? `Sincronizado: removidos ${mine.removed.length}, novos disponiveis ${mine.added.length}`
-          : "Sincronizado.");
-        setTimeout(() => window.location.reload(), 900);
+      const json = await res.json().catch(() => null);
+
+      // 2. Se houver conexao ativa cadastrada, consulta diretamente a API do provedor
+      const activeConn = connections.find((conn) => conn.isActive !== false);
+      let live = [];
+      if (activeConn) {
+        connQueried = true;
+        try {
+          const modelsRes = await fetch(`/api/providers/${activeConn.id}/models`);
+          if (modelsRes.ok) {
+            const data = await modelsRes.json();
+            live = data.models || [];
+            if (live.length > 0) {
+              setLiveModels(live);
+
+              const builtInIds = new Set(staticModels.map((m) => m.id));
+              const currentCustom = customModels.filter((m) => m.providerAlias === providerStorageAlias);
+              const existingCustomIds = new Set(currentCustom.map((m) => m.id));
+              const liveIds = new Set(live.map((m) => m.id));
+
+              // 2.1 Auto-adiciona novos modelos lancados pelo provedor que ainda nao existem no painel
+              for (const lm of live) {
+                if (!builtInIds.has(lm.id) && !existingCustomIds.has(lm.id)) {
+                  try {
+                    await fetch("/api/models/custom", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        providerAlias: providerStorageAlias,
+                        id: lm.id,
+                        type: lm.type || "llm",
+                        name: lm.name || lm.id,
+                      }),
+                    });
+                    addedCount++;
+                  } catch (e) {
+                    console.log("Error auto-adding model:", lm.id, e);
+                  }
+                }
+              }
+
+              // 2.2 Auto-remove modelos customizados que foram descontinuados pela API
+              for (const cm of currentCustom) {
+                if (!liveIds.has(cm.id)) {
+                  try {
+                    const params = new URLSearchParams({
+                      providerAlias: providerStorageAlias,
+                      id: cm.id,
+                      type: cm.type || "llm",
+                    });
+                    await fetch(`/api/models/custom?${params}`, { method: "DELETE" });
+                    removedCount++;
+                  } catch (e) {
+                    console.log("Error auto-removing model:", cm.id, e);
+                  }
+                }
+              }
+
+              // 2.3 Auto-desativa modelos padrao que foram descontinuados pela API do provedor
+              const deadBuiltIn = staticModels.filter((bm) => !liveIds.has(bm.id) && !disabledModelIds.includes(bm.id));
+              if (deadBuiltIn.length > 0) {
+                try {
+                  await fetch("/api/models/disabled", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      providerAlias: providerStorageAlias,
+                      ids: deadBuiltIn.map((m) => m.id),
+                    }),
+                  });
+                  disabledCount += deadBuiltIn.length;
+                } catch (e) {
+                  console.log("Error auto-disabling dead built-in models:", e);
+                }
+              }
+
+              // 2.4 Auto-reativa modelos padrao que voltaram a ficar disponiveis na API
+              const restoredBuiltIn = staticModels.filter((bm) => liveIds.has(bm.id) && disabledModelIds.includes(bm.id));
+              for (const rm of restoredBuiltIn) {
+                try {
+                  await fetch(`/api/models/disabled?providerAlias=${providerStorageAlias}&id=${encodeURIComponent(rm.id)}`, {
+                    method: "DELETE",
+                  });
+                  restoredCount++;
+                } catch (e) {
+                  console.log("Error auto-enabling restored model:", rm.id, e);
+                }
+              }
+            }
+          } else {
+            connFailed = true;
+          }
+        } catch (e) {
+          console.log("Error fetching live connection models:", e);
+          connFailed = true;
+        }
+      }
+
+      // 3. Consulta catalogo ao vivo publico se disponivel (modelsFetcher com force=true)
+      const fetcher = (OAUTH_PROVIDERS[providerId] || APIKEY_PROVIDERS[providerId] || FREE_PROVIDERS[providerId] || FREE_TIER_PROVIDERS[providerId])?.modelsFetcher;
+      let freshSuggested = null;
+      if (fetcher) {
+        try {
+          freshSuggested = await fetchSuggestedModels(fetcher, { force: true });
+          setSuggestedModels(freshSuggested);
+        } catch { /* ignore */ }
+      }
+
+      // Se nao tinha conexao ou a conexao nao retornou modelos, sincroniza a partir do catalogo publico sugerido
+      if ((!activeConn || !live?.length) && freshSuggested && freshSuggested.length > 0) {
+        const builtInIds = new Set(staticModels.map((m) => m.id));
+        const currentCustom = customModels.filter((m) => m.providerAlias === providerStorageAlias);
+        const existingCustomIds = new Set(currentCustom.map((m) => m.id));
+        for (const sm of freshSuggested) {
+          if (!builtInIds.has(sm.id) && !existingCustomIds.has(sm.id)) {
+            try {
+              await fetch("/api/models/custom", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  providerAlias: providerStorageAlias,
+                  id: sm.id,
+                  type: sm.type || "llm",
+                  name: sm.name || sm.id,
+                }),
+              });
+              addedCount++;
+            } catch (e) {
+              console.log("Error auto-adding suggested model:", sm.id, e);
+            }
+          }
+        }
+      }
+
+      await fetchCustomModels();
+      await fetchDisabledModels();
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("customModelChanged"));
+      }
+
+      const mine = (json?.results || []).find((r) => r.alias === providerStorageAlias || r.provider === providerId);
+      const totalAdded = addedCount + (mine?.added?.length || 0);
+      const totalRemoved = removedCount + disabledCount + (mine?.removed?.length || 0);
+
+      if (totalAdded > 0 || totalRemoved > 0) {
+        setSyncModelsMsg(
+          `${translate("Synchronized")}: +${totalAdded} ${translate("new available")}, -${totalRemoved} ${translate("removed")}`
+        );
+      } else if (connFailed && (!freshSuggested || freshSuggested.length === 0)) {
+        setSyncModelsMsg(translate("Failed to sync: connection returned an error."));
+      } else if (!activeConn && (!freshSuggested || freshSuggested.length === 0)) {
+        setSyncModelsMsg(translate("No active connection. Add a connection to sync directly from the provider API."));
       } else {
-        setSyncModelsMsg("Falha ao sincronizar.");
+        setSyncModelsMsg(translate("Synchronized: All models are up to date."));
       }
     } catch {
-      setSyncModelsMsg("Falha ao sincronizar.");
+      setSyncModelsMsg(translate("Failed to sync."));
     } finally {
       setSyncingModels(false);
     }
   };
 
-  const handleSetAlias = async (modelId, alias, providerAliasOverride = providerAlias) => {
+    const handleSetAlias = async (modelId, alias, providerAliasOverride = providerAlias) => {
     const fullModel = `${providerAliasOverride}/${modelId}`;
     try {
       const res = await fetch("/api/models/alias", {
@@ -624,8 +789,8 @@ export default function ProviderDetailPage() {
     const total = activeIds.length + rows.length;
     if (total === 0) return;
     setConfirmState({
-      title: "Remove All Models",
-      message: `Remove all ${total} model(s) from this provider?`,
+      title: translate("Remove All Models"),
+      message: `${translate("Remove all")} ${total} ${translate("model(s) from this provider?")}`,
       onConfirm: async () => {
         setConfirmState(null);
         try {
@@ -1151,14 +1316,75 @@ export default function ProviderDetailPage() {
         body: JSON.stringify({ model: `${providerStorageAlias}/${modelId}` }),
       });
       const data = await res.json();
-      setModelTestResults((prev) => ({ ...prev, [modelId]: data.ok ? "ok" : "error" }));
-      setModelsTestError(data.ok ? "" : (data.error || "Model not reachable"));
-    } catch {
+      const isOk = !!data.ok;
+      setModelTestResults((prev) => ({ ...prev, [modelId]: isOk ? "ok" : "error" }));
+      setModelsTestError(isOk ? "" : (data.error || "Model not reachable"));
+      return { ok: isOk, error: data.error };
+    } catch (err) {
       setModelTestResults((prev) => ({ ...prev, [modelId]: "error" }));
       setModelsTestError("Network error");
+      return { ok: false, error: err.message || "Network error" };
     } finally {
       setTestingModelIds((prev) => { const n = new Set(prev); n.delete(modelId); return n; });
     }
+  };
+
+  const getActiveModelIds = () => {
+    const activeBuiltInIds = getLlmCatalog().map((m) => m.id).filter((id) => !disabledModelIds.includes(id));
+    const customRows = getProviderCustomModelRows({
+      customModels,
+      modelAliases,
+      providerAlias: providerStorageAlias,
+      builtInModels: models,
+      type: "llm",
+    });
+    return Array.from(new Set([...customRows.map((m) => m.id), ...activeBuiltInIds]));
+  };
+
+  const handleTestAllModels = async () => {
+    const targetModelIds = getActiveModelIds();
+    if (targetModelIds.length === 0) return;
+
+    setTestingAllModels(true);
+    abortTestAllRef.current = false;
+    setTestAllProgress({ current: 0, total: targetModelIds.length });
+    setTestAllSummaryMsg("");
+    setModelsTestError("");
+
+    let okCount = 0;
+    let failCount = 0;
+
+    for (let i = 0; i < targetModelIds.length; i++) {
+      if (abortTestAllRef.current) break;
+
+      const modelId = targetModelIds[i];
+      setTestAllProgress({ current: i + 1, total: targetModelIds.length });
+
+      const result = await handleTestModel(modelId);
+      if (result?.ok) {
+        okCount++;
+      } else {
+        failCount++;
+      }
+
+      if (i < targetModelIds.length - 1 && !abortTestAllRef.current) {
+        await new Promise((r) => setTimeout(r, 120));
+      }
+    }
+
+    setTestingAllModels(false);
+    if (abortTestAllRef.current) {
+      setTestAllSummaryMsg(translate("Test stopped."));
+    } else {
+      setTestAllSummaryMsg(
+        `${translate("Test completed")}: ${okCount} ${translate("working")}, ${failCount} ${translate("with error")}`
+      );
+    }
+  };
+
+  const handleStopTestAllModels = () => {
+    abortTestAllRef.current = true;
+    setTestingAllModels(false);
   };
 
   const renderModelsSection = () => {
@@ -1724,17 +1950,17 @@ export default function ProviderDetailPage() {
         <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-semibold">
-              {"Available Models"}
+              {translate("Available Models")}
             </h2>
             {providerThinkingLevels && (
               <select
                 value={thinkingMode}
                 onChange={(e) => handleThinkingModeChange(e.target.value)}
-                title="Appends (level) suffix to copied model names"
+                title={translate("Appends (level) suffix to copied model names")}
                 className="rounded-md border border-border bg-background px-2 py-1 text-xs focus:border-primary focus:outline-none"
               >
                 {providerThinkingLevels.map((opt) => (
-                  <option key={opt} value={opt}>{`Thinking: ${opt.charAt(0).toUpperCase() + opt.slice(1)}`}</option>
+                  <option key={opt} value={opt}>{`${translate("Thinking")}: ${opt.charAt(0).toUpperCase() + opt.slice(1)}`}</option>
                 ))}
               </select>
             )}
@@ -1749,42 +1975,60 @@ export default function ProviderDetailPage() {
                 <button
                   onClick={() => setShowAddCustomModel(true)}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-primary/40 text-xs font-medium text-primary hover:border-primary hover:bg-primary/5 transition-colors"
-                  title="Add a custom model"
+                  title={translate("Add a custom model")}
                 >
                   <span className="material-symbols-outlined text-sm">add</span>
-                  Add Model
+                  {translate("Add Model")}
                 </button>
                 <button
                   onClick={handleAddAllModels}
                   disabled={!canAdd}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-green-500/40 text-xs font-medium text-green-600 dark:text-green-400 hover:border-green-500 hover:text-green-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                  title="Add every model of this provider"
+                  title={translate("Add every model of this provider")}
                 >
                   <span className="material-symbols-outlined text-sm">add</span>
-                  Add all
+                  {translate("Add all")}
                 </button>
                 <button
                   onClick={handleRemoveAllModels}
                   disabled={!canRemove}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-red-500/40 text-xs font-medium text-red-600 dark:text-red-400 hover:border-red-500 hover:text-red-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                  title="Remove every model of this provider"
+                  title={translate("Remove every model of this provider")}
                 >
                   <span className="material-symbols-outlined text-sm">remove</span>
-                  Remove all
+                  {translate("Remove all")}
                 </button>
-                {hasModelsFetcher && (
-                  <button
-                    onClick={handleSyncModels}
-                    disabled={syncingModels}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-blue-500/40 text-xs font-medium text-blue-600 dark:text-blue-400 hover:border-blue-500 hover:text-blue-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                    title="Re-fetch the provider catalog and remove models that no longer exist"
+                <button
+                  onClick={handleSyncModels}
+                  disabled={syncingModels || testingAllModels}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-blue-500/40 text-xs font-medium text-blue-600 dark:text-blue-400 hover:border-blue-500 hover:text-blue-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  title={translate("Re-fetch the provider catalog and remove models that no longer exist")}
+                >
+                  <span className="material-symbols-outlined text-sm" style={syncingModels ? { animation: "spin 1s linear infinite" } : undefined}>
+                    {syncingModels ? "progress_activity" : "sync"}
+                  </span>
+                  {syncingModels ? translate("Syncing...") : translate("Sync")}
+                </button>
+                <button
+                  onClick={testingAllModels ? handleStopTestAllModels : handleTestAllModels}
+                  disabled={(!connections.length && !isFreeNoAuth) || getActiveModelIds().length === 0 || syncingModels}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dashed text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                    testingAllModels
+                      ? "border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400 animate-pulse"
+                      : "border-amber-500/40 text-amber-600 dark:text-amber-400 hover:border-amber-500 hover:text-amber-500 hover:bg-amber-500/5"
+                  }`}
+                  title={testingAllModels ? translate("Stop testing") : translate("Test all active models of this provider")}
+                >
+                  <span
+                    className="material-symbols-outlined text-sm"
+                    style={testingAllModels ? { animation: "spin 1s linear infinite" } : undefined}
                   >
-                    <span className="material-symbols-outlined text-sm" style={syncingModels ? { animation: "spin 1s linear infinite" } : undefined}>
-                      {syncingModels ? "progress_activity" : "sync"}
-                    </span>
-                    {syncingModels ? "Sincronizando..." : "Sincronizar"}
-                  </button>
-                )}
+                    {testingAllModels ? "progress_activity" : "science"}
+                  </span>
+                  {testingAllModels
+                    ? `${translate("Testing...")} (${testAllProgress.current}/${testAllProgress.total})`
+                    : translate("Test all")}
+                </button>
               </div>
             );
           })()}
@@ -1794,6 +2038,9 @@ export default function ProviderDetailPage() {
         )}
         {!!syncModelsMsg && (
           <p className="text-xs text-blue-500 mb-3 break-words">{syncModelsMsg}</p>
+        )}
+        {!!testAllSummaryMsg && (
+          <p className="text-xs text-amber-600 dark:text-amber-400 mb-3 break-words font-medium">{testAllSummaryMsg}</p>
         )}
         {renderModelsSection()}
       </Card>

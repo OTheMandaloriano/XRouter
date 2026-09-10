@@ -160,7 +160,15 @@ export async function getAntigravityUsage(accessToken, providerSpecificData, pro
     // Parse model quotas (inspired by vscode-antigravity-cockpit)
     if (data.models) {
       // Filter only recommended/important models (must match PROVIDER_MODELS ag ids)
-      const importantModels = [
+            const importantModels = [
+        'gemini-3.8-flash-high',
+        'gemini-3.8-flash-medium',
+        'gemini-3.8-flash-low',
+        'gemini-2.5-pro',
+        'gemini-2.5-flash',
+        'gemini-3.1-pro-high',
+        'gemini-3.5-flash-lite',
+        'gemini-3.1-flash-lite',
         'gemini-3.7-flash-high',
         'gemini-3.7-flash-medium',
         'gemini-3.7-flash-low',
@@ -184,24 +192,43 @@ export async function getAntigravityUsage(accessToken, providerSpecificData, pro
           continue;
         }
 
-        // Skip internal models and non-important models
-        if (info.isInternal || !importantModels.includes(modelKey)) {
+                if (info.isInternal) {
           continue;
         }
 
         const remainingFraction = info.quotaInfo.remainingFraction || 0;
         const remainingPercentage = remainingFraction * 100;
-
-        // Convert percentage to used/total for UI compatibility
-        const total = 1000; // Normalized base
+        const total = 1000;
         const remaining = Math.round(total * remainingFraction);
         const used = total - remaining;
+        const resetAt = parseResetTime(info.quotaInfo.resetTime);
 
-        // Use modelKey as key (matches PROVIDER_MODELS id)
+        if (modelKey.endsWith("-tiered")) {
+          const base = modelKey.slice(0, -7);
+          for (const tier of ["high", "medium", "low"]) {
+            const tierKey = `${base}-${tier}`;
+            if (importantModels.includes(tierKey)) {
+              quotas[tierKey] = {
+                used,
+                total,
+                resetAt,
+                remainingPercentage,
+                unlimited: false,
+                displayName: `${info.displayName || base} (${tier.charAt(0).toUpperCase() + tier.slice(1)})`,
+              };
+            }
+          }
+          continue;
+        }
+
+        if (!importantModels.includes(modelKey)) {
+          continue;
+        }
+
         quotas[modelKey] = {
           used,
           total,
-          resetAt: parseResetTime(info.quotaInfo.resetTime),
+          resetAt,
           remainingPercentage,
           unlimited: false,
           displayName: info.displayName || modelKey,

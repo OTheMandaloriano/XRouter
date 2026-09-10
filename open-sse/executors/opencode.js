@@ -1,4 +1,4 @@
-import crypto from "crypto";
+﻿import crypto from "crypto";
 import { BaseExecutor } from "./base.js";
 import { PROVIDERS } from "../config/providers.js";
 import { injectReasoningContent } from "../utils/reasoningContentInjector.js";
@@ -31,8 +31,8 @@ function resolveOpencodeSession(body, credentials) {
 }
 
 export class OpenCodeExecutor extends BaseExecutor {
-  constructor() {
-    super("opencode", PROVIDERS.opencode);
+  constructor(providerId = "opencode") {
+    super(providerId, PROVIDERS[providerId] || PROVIDERS.opencode);
     this._currentSessionId = null;
   }
 
@@ -55,10 +55,12 @@ export class OpenCodeExecutor extends BaseExecutor {
 
     const downstreamUa = lower["user-agent"] || "";
     const isOpencodeDownstream = downstreamUa.toLowerCase().includes("opencode");
+    const token = credentials?.apiKey || credentials?.accessToken;
+    const authHeader = token && token !== "public" ? `Bearer ${token}` : "Bearer public";
 
     return {
       "Content-Type": "application/json",
-      "Authorization": "Bearer public",
+      "Authorization": authHeader,
       "User-Agent": isOpencodeDownstream ? downstreamUa : OPENCODE_UA,
       "x-opencode-client": lower["x-opencode-client"] || "desktop",
       "x-opencode-session": lower["x-opencode-session"] || this._currentSessionId || generateSessionId(),

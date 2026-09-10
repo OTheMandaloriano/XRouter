@@ -1,3 +1,43 @@
+// Resolve Antigravity model names and thinking tiers to upstream-compatible identifiers
+export function resolveAntigravityModel(inputModel) {
+  let model = String(inputModel || "");
+  let thinkingLevel = null;
+
+  // 1. Handle tiered with parentheses: e.g. "gemini-3.8-flash-tiered(high)" -> model: "gemini-3.8-flash-tiered", level: "high"
+  const tieredParenMatch = model.match(/^(gemini-[\d.]+-flash-tiered)\((high|medium|low)\)$/i);
+  if (tieredParenMatch) {
+    model = tieredParenMatch[1];
+    thinkingLevel = tieredParenMatch[2].toLowerCase();
+  }
+
+  // 2. Direct high/medium/low for flash models (e.g. gemini-3.7-flash-high -> gemini-3.7-flash-tiered)
+  const flashTierMatch = model.match(/^gemini-(3\.[78])-flash-(high|medium|low)$/i);
+  if (flashTierMatch) {
+    model = `gemini-${flashTierMatch[1]}-flash-tiered`;
+    thinkingLevel = flashTierMatch[2].toLowerCase();
+  }
+
+  // 3. Gemini 3.1 Pro High requires gemini-pro-agent (Google rejects gemini-3.1-pro-high with 400 INVALID_ARGUMENT)
+  if (model === "gemini-3.1-pro-high") {
+    model = "gemini-pro-agent";
+  }
+
+  // 4. Deprecated 3.5 Flash models: Google retired them ("Gemini 3.5 Flash is no longer available. Please switch to Gemini 3.7 Flash...")
+  // Map automatically to 3.7 Flash Tiered to prevent 404 / retirement errors
+  if (model === "gemini-3.5-flash-high" || model === "gemini-3-flash-agent") {
+    model = "gemini-3.7-flash-tiered";
+    thinkingLevel = thinkingLevel || "high";
+  } else if (model === "gemini-3.5-flash-low") {
+    model = "gemini-3.7-flash-tiered";
+    thinkingLevel = thinkingLevel || "medium";
+  } else if (model === "gemini-3.5-flash-extra-low") {
+    model = "gemini-3.7-flash-tiered";
+    thinkingLevel = thinkingLevel || "low";
+  }
+
+  return { model, thinkingLevel };
+}
+
 import crypto from "crypto";
 import { BaseExecutor } from "./base.js";
 import { PROVIDERS } from "../config/providers.js";
@@ -144,7 +184,7 @@ export class AntigravityExecutor extends BaseExecutor {
     if (isImageModel(model)) {
       const imageConfig = parseImageConfig(model);
       // Strip model name suffixes for the actual API model name
-      const cleanModel = model.replace(/-(\d+)x(\d+)$/, "");
+      const cleanModel = effectiveModel.replace(/-(\d+)x(\d+)$/, "");
 
       // Build simplified contents — text-only, merge all user messages
       const contents = [];

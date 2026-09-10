@@ -1391,5 +1391,7 @@
   "📝 Configure providers in dashboard or use environment variables": "📝 กำหนดค่า providers ใน dashboard หรือใช้ environment variables",
   "🔐 OAuth required. Add now and authenticate after Apply; tool list will be discovered after first connect.": "🔐 ต้องใช้ OAuth เพิ่มตอนนี้แล้ว authenticate หลัง Apply; รายการเครื่องมือจะถูกค้นพบหลังการเชื่อมต่อครั้งแรก",
   "Add all": "เพิ่มทั้งหมด",
-  "Remove all": "ลบทั้งหมด"
+  "Remove all": "ลบทั้งหมด",
+  "No active connection. Add a connection to sync directly from the provider API.": "No active connection. Add a connection to sync directly from the provider API.",
+  "Failed to sync: connection returned an error.": "Failed to sync: connection returned an error."
 }

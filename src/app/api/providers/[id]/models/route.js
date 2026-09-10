@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { getProviderConnectionById } from "@/models";
+import { getProviderConnectionById, getProviderConnections } from "@/models";
 import { isOpenAICompatibleProvider, isAnthropicCompatibleProvider } from "@/shared/constants/providers";
-import { GEMINI_CONFIG } from "@/lib/oauth/constants/oauth";
+import { GEMINI_CONFIG, ANTIGRAVITY_CONFIG } from "@/lib/oauth/constants/oauth";
 import { refreshGoogleToken, refreshCodexToken, updateProviderCredentials } from "@/sse/services/tokenRefresh";
 import { resolveOllamaLocalHost } from "open-sse/config/providers.js";
 import { getModelsByProviderId } from "open-sse/config/providerModels.js";
@@ -18,12 +18,77 @@ const GEMINI_CLI_MODELS_URL = "https://cloudcode-pa.googleapis.com/v1internal:fe
 // value, and codex CLI's own manifest (openai/codex codex-rs/models-manager/models.json)
 // already requires 0.144.0 for its newest models, so a stale client_version here comes
 // back 200 with those entries quietly missing instead of erroring.
-const CODEX_CLIENT_VERSION = "0.144.6";
+const CODEX_CLIENT_VERSION = "0.150.0";
 const CODEX_MODELS_URL = `https://chatgpt.com/backend-api/codex/models?client_version=${CODEX_CLIENT_VERSION}`;
 
 const parseOpenAIStyleModels = (data) => {
-  if (Array.isArray(data)) return data;
-  return data?.data || data?.models || data?.results || [];
+  const list = Array.isArray(data) ? data : data?.data || data?.models || data?.results || [];
+  return list.map((m) => {
+    if (typeof m === "string") return { id: m, name: m };
+    const id = m?.id || m?.model || m?.name;
+    const name = m?.display_name || m?.displayName || m?.name || id;
+    return { ...m, id, name };
+  });
+};
+
+const ANTIGRAVITY_MODELS_URL = "https://cloudcode-pa.googleapis.com/v1internal:fetchAvailableModels";
+
+const parseAntigravityModels = (data) => {
+  if (!data?.models || typeof data.models !== "object") return [];
+
+  const result = [];
+  const seen = new Set();
+
+  for (const [id, info] of Object.entries(data.models)) {
+    if (info?.isInternal) continue;
+    if (id.startsWith("tab_") || id.startsWith("chat_")) continue;
+
+    if (id.endsWith("-tiered")) {
+      const base = id.slice(0, -7); // e.g. gemini-3.8-flash
+      const baseDisplayName = info?.displayName && info.displayName !== "undefined"
+        ? info.displayName
+        : base.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+      
+      for (const tier of ["high", "medium", "low"]) {
+        const tierModelId = `${base}-${tier}`;
+        if (seen.has(tierModelId)) continue;
+        seen.add(tierModelId);
+        const tierCap = tier.charAt(0).toUpperCase() + tier.slice(1);
+        result.push({
+          id: tierModelId,
+          name: `${baseDisplayName} (${tierCap})`,
+          upstreamModelId: `${id}(${tier})`,
+          type: "llm"
+        });
+      }
+      continue;
+    }
+
+    if (seen.has(id)) continue;
+    seen.add(id);
+
+    let displayName = info?.displayName && info.displayName !== "undefined" ? info.displayName : id;
+    if (id === "gemini-2.5-flash") displayName = "Gemini 2.5 Flash";
+    else if (id === "gemini-2.5-flash-lite") displayName = "Gemini 2.5 Flash Lite";
+    else if (id === "gemini-2.5-flash-thinking") displayName = "Gemini 2.5 Flash (Thinking)";
+    else if (id === "gemini-3.8-flash") displayName = "Gemini 3.8 Flash";
+
+    let upstreamId = id;
+    if (id === "gemini-3.1-pro-high") upstreamId = "gemini-pro-agent";
+    else if (id === "gemini-3.5-flash-high" || id === "gemini-3-flash-agent") upstreamId = "gemini-3.7-flash-tiered(high)";
+    else if (id === "gemini-3.5-flash-low") upstreamId = "gemini-3.7-flash-tiered(medium)";
+    else if (id === "gemini-3.5-flash-extra-low") upstreamId = "gemini-3.7-flash-tiered(low)";
+
+    const isImage = id.includes("image");
+    result.push({
+      id,
+      name: displayName,
+      upstreamModelId: upstreamId,
+      type: isImage ? "image" : "llm"
+    });
+  }
+
+  return result;
 };
 
 const parseGeminiCliModels = (data) => {
@@ -147,27 +212,46 @@ const PROVIDER_MODELS_CONFIG = {
   codex: {
     customResolver: buildOAuthResolver({
       refreshFn: (conn) => refreshCodexToken(conn.refreshToken),
-      fetchFn: (token) => fetch(CODEX_MODELS_URL, {
-        method: "GET",
-        headers: {
+      fetchFn: (token, conn) => {
+        const headers = {
           "Content-Type": "application/json",
           "Accept": "application/json",
           "Authorization": `Bearer ${token}`,
-          "originator": "codex_cli_rs"
-        }
-      }),
+          "originator": "codex_cli_rs",
+          "User-Agent": "codex_cli_rs/0.150.0"
+        };
+        const accountId = conn?.accountId || conn?.providerSpecificData?.accountId;
+        if (accountId) headers["ChatGPT-Account-ID"] = accountId;
+        return fetch(CODEX_MODELS_URL, {
+          method: "GET",
+          headers
+        });
+      },
       parseFn: parseCodexModels,
       errorLabel: "Failed to fetch Codex models"
     })
   },
-  antigravity: {
-    url: "https://daily-cloudcode-pa.sandbox.googleapis.com/v1internal:models",
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    authHeader: "Authorization",
-    authPrefix: "Bearer ",
-    body: {},
-    parseResponse: (data) => data.models || []
+    antigravity: {
+    customResolver: buildOAuthResolver({
+      refreshFn: (conn) => refreshGoogleToken(conn.refreshToken, ANTIGRAVITY_CONFIG.clientId, ANTIGRAVITY_CONFIG.clientSecret),
+      fetchFn: (token, conn) => {
+        const projectId = conn.projectId || conn.providerSpecificData?.projectId;
+        const body = projectId ? { project: projectId } : {};
+        return fetch(ANTIGRAVITY_MODELS_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+            "User-Agent": "antigravity/1.10.0 windows/amd64",
+            "X-Client-Name": "antigravity",
+            "X-Client-Version": "1.10.0"
+          },
+          body: JSON.stringify(body)
+        });
+      },
+      parseFn: parseAntigravityModels,
+      errorLabel: "Failed to fetch Antigravity models"
+    })
   },
   github: {
     url: "https://api.githubcopilot.com/models",
@@ -196,18 +280,78 @@ const PROVIDER_MODELS_CONFIG = {
         }));
     }
   },
+  inferx: createOpenAIModelsConfig("https://model.inferx.net/endpoints/v1/models"),
+  orcarouter: createOpenAIModelsConfig("https://api.orcarouter.ai/v1/models"),
   openai: createOpenAIModelsConfig("https://api.openai.com/v1/models"),
   openrouter: createOpenAIModelsConfig("https://openrouter.ai/api/v1/models"),
-  anthropic: {
-    url: "https://api.anthropic.com/v1/models",
-    method: "GET",
-    headers: {
-      "Anthropic-Version": "2023-06-01",
-      "Content-Type": "application/json"
-    },
-    authHeader: "x-api-key",
-    parseResponse: (data) => data.data || []
+  claude: {
+    customResolver: async (connection) => {
+      const token = connection.accessToken || connection.apiKey;
+      if (!token) return { error: "No valid token found", status: 401 };
+      const isOAuth = !!connection.accessToken || token.startsWith("sk-ant-oat");
+      const headers = {
+        "Anthropic-Version": "2023-06-01",
+        "Content-Type": "application/json"
+      };
+      if (isOAuth) {
+        headers["Authorization"] = `Bearer ${token}`;
+        headers["Anthropic-Beta"] = "claude-code-20250219,oauth-2025-04-20";
+      } else {
+        headers["x-api-key"] = token;
+      }
+      const res = await fetch("https://api.anthropic.com/v1/models", { method: "GET", headers });
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.log("Error fetching models from Claude:", errorText);
+        return { error: `Failed to fetch models: ${res.status}`, status: res.status };
+      }
+      const data = await res.json();
+      const models = (data.data || []).map((m) => ({
+        id: m.id,
+        name: m.display_name || m.id,
+        type: "llm"
+      }));
+      return { models };
+    }
   },
+  anthropic: {
+    customResolver: async (connection) => {
+      const token = connection.accessToken || connection.apiKey;
+      if (!token) return { error: "No valid token found", status: 401 };
+      const isOAuth = !!connection.accessToken || token.startsWith("sk-ant-oat");
+      const headers = {
+        "Anthropic-Version": "2023-06-01",
+        "Content-Type": "application/json"
+      };
+      if (isOAuth) {
+        headers["Authorization"] = `Bearer ${token}`;
+        headers["Anthropic-Beta"] = "claude-code-20250219,oauth-2025-04-20";
+      } else {
+        headers["x-api-key"] = token;
+      }
+      const res = await fetch("https://api.anthropic.com/v1/models", { method: "GET", headers });
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.log("Error fetching models from Anthropic:", errorText);
+        return { error: `Failed to fetch models: ${res.status}`, status: res.status };
+      }
+      const data = await res.json();
+      const models = (data.data || []).map((m) => ({
+        id: m.id,
+        name: m.display_name || m.id,
+        type: "llm"
+      }));
+      return { models };
+    }
+  },
+  "opencode-zen": createOpenAIModelsConfig("https://opencode.ai/zen/v1/models"),
+  opencode: createOpenAIModelsConfig("https://opencode.ai/zen/v1/models"),
+  "opencode-go": createOpenAIModelsConfig("https://opencode.ai/zen/go/v1/models"),
+  kilocode: createOpenAIModelsConfig("https://api.kilo.ai/api/gateway/models"),
+  "kilo-gateway": createOpenAIModelsConfig("https://api.kilo.ai/api/gateway/models"),
+  poolside: createOpenAIModelsConfig("https://inference.poolside.ai/v1/models"),
+  "api-airforce": createOpenAIModelsConfig("https://api.airforce/v1/models"),
+  bazaarlink: createOpenAIModelsConfig("https://bazaarlink.ai/api/v1/models"),
 
   alicode: {
     url: "https://coding.dashscope.aliyuncs.com/v1/models",
@@ -442,9 +586,22 @@ const PROVIDER_MODELS_CONFIG = {
 export async function GET(request, { params }) {
   try {
     const { id } = await params;
-    const connection = await getProviderConnectionById(id);
+    let connection = await getProviderConnectionById(id);
+    if (!connection) {
+      const conns = await getProviderConnections();
+      connection = conns.find((c) => (c.provider === id || c.id === id) && c.isActive !== false) ||
+                   conns.find((c) => c.provider === id || c.id === id);
+    }
 
     if (!connection) {
+      const staticModels = getStaticProviderModels(id);
+      if (staticModels && staticModels.length > 0) {
+        return NextResponse.json({
+          provider: id,
+          models: staticModels,
+          warning: "Static provider catalog (no active connection configured)"
+        });
+      }
       return NextResponse.json({ error: "Connection not found" }, { status: 404 });
     }
 
@@ -522,12 +679,25 @@ export async function GET(request, { params }) {
       });
     }
 
-    const config = PROVIDER_MODELS_CONFIG[connection.provider];
+    let config = PROVIDER_MODELS_CONFIG[connection.provider];
     if (!config) {
-      return NextResponse.json(
-        { error: `Provider ${connection.provider} does not support models listing` },
-        { status: 400 }
-      );
+      const reg = registry.find((p) => p.id === connection.provider || p.alias === connection.provider || (p.aliases && p.aliases.includes(connection.provider)));
+      if (reg?.modelsFetcher?.url) {
+        config = createOpenAIModelsConfig(reg.modelsFetcher.url);
+      } else if (reg?.transport?.baseUrl) {
+        const base = reg.transport.baseUrl.replace(/\/chat\/completions$/, "").replace(/\/messages$/, "").replace(/\/responses$/, "");
+        config = createOpenAIModelsConfig(`${base}/models`);
+      }
+    }
+
+    if (!config) {
+      const staticModels = getStaticProviderModels(connection.provider);
+      return NextResponse.json({
+        provider: connection.provider,
+        connectionId: connection.id,
+        models: staticModels || [],
+        warning: `Provider ${connection.provider} uses static catalog`
+      });
     }
 
     // Config-driven custom resolver path (OAuth refresh, non-OpenAI shape, etc.)

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { translate } from "@/i18n/runtime";
 import PropTypes from "prop-types";
 import { Button } from "@/shared/components";
 import { getProviderCustomModelRows } from "@/shared/utils/providerCustomModels";
@@ -76,6 +77,45 @@ export default function CompatibleModelsSection({ providerStorageAlias, provider
   const [adding, setAdding] = useState(false);
   const [importing, setImporting] = useState(false);
   const [testingModelId, setTestingModelId] = useState(null);
+  const [testingAll, setTestingAll] = useState(false);
+  const [testProgress, setTestProgress] = useState({ current: 0, total: 0 });
+  const abortTestAllRef = useRef(false);
+
+  const handleTestAll = async () => {
+    if (testingAll || allModels.length === 0) return;
+    setTestingAll(true);
+    abortTestAllRef.current = false;
+    setTestProgress({ current: 0, total: allModels.length });
+
+    for (let i = 0; i < allModels.length; i++) {
+      if (abortTestAllRef.current) break;
+      const modelId = allModels[i].id;
+      setTestProgress({ current: i + 1, total: allModels.length });
+      setTestingModelId(modelId);
+      try {
+        const res = await fetch("/api/models/test", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ model: `${providerStorageAlias}/${modelId}` }),
+        });
+        const data = await res.json();
+        setModelTestResults((prev) => ({ ...prev, [modelId]: data.ok ? "ok" : "error" }));
+      } catch {
+        setModelTestResults((prev) => ({ ...prev, [modelId]: "error" }));
+      } finally {
+        setTestingModelId(null);
+      }
+      if (i < allModels.length - 1 && !abortTestAllRef.current) {
+        await new Promise((r) => setTimeout(r, 120));
+      }
+    }
+    setTestingAll(false);
+  };
+
+  const handleStopTestAll = () => {
+    abortTestAllRef.current = true;
+    setTestingAll(false);
+  };
   const [modelTestResults, setModelTestResults] = useState({});
 
   const handleTestModel = async (modelId) => {
@@ -184,6 +224,15 @@ export default function CompatibleModelsSection({ providerStorageAlias, provider
         </Button>
         <Button size="sm" variant="secondary" icon="download" onClick={handleImport} disabled={!canImport || importing}>
           {importing ? "Importing..." : "Import from /models"}
+        </Button>
+        <Button
+          size="sm"
+          variant="secondary"
+          icon={testingAll ? "progress_activity" : "science"}
+          onClick={testingAll ? handleStopTestAll : handleTestAll}
+          disabled={!canImport || allModels.length === 0}
+        >
+          {testingAll ? `${translate("Testing...")} (${testProgress.current}/${testProgress.total})` : translate("Test all")}
         </Button>
       </div>
 

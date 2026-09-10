@@ -195,5 +195,7 @@
   "⚠️ MITM intercepts HTTPS traffic of IDE tools (Antigravity, GitHub Copilot, Kiro) via local CA to redirect requests to your providers. May violate ToS → account ban. Use at your own risk.": "⚠️ MITM przechwytuje ruch HTTPS narzędzi IDE (Antigravity, GitHub Copilot, Kiro) przez lokalne CA, aby przekierować żądania do twoich dostawców. Może naruszyć ToS → ryzyko zbanowania konta. Używaj na własne ryzyko.",
   "Endpoint is exposed without an API key.": "Punkt końcowy jest dostępny bez klucza API.",
   "Add all": "Dodaj wszystkie",
-  "Remove all": "Usuń wszystkie"
+  "Remove all": "Usuń wszystkie",
+  "No active connection. Add a connection to sync directly from the provider API.": "No active connection. Add a connection to sync directly from the provider API.",
+  "Failed to sync: connection returned an error.": "Failed to sync: connection returned an error."
 }

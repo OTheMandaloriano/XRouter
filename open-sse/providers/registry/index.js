@@ -1,4 +1,4 @@
-// Auto-generated: static imports for all registry entries
+﻿// Auto-generated: static imports for all registry entries
 import p0 from "./alicode-intl.js";
 import p1 from "./alicode.js";
 import p2 from "./anthropic.js";
@@ -69,6 +69,7 @@ import p66 from "./ollama.js";
 import p67 from "./openai.js";
 import p68 from "./opencode-go.js";
 import p69 from "./opencode.js";
+import pZen from "./opencode-zen.js";
 import p70 from "./openrouter.js";
 import p71 from "./perplexity-web.js";
 import p72 from "./perplexity.js";
@@ -99,7 +100,7 @@ import p97 from "./xiaomi-tokenplan.js";
 import p98 from "./youcom.js";
 import p99 from "./alims-intl.js";
 import p100 from "./codebuddy-intl.js";
-// Temporarily hidden — no tool calling support (trae SOLO agent / windsurf gRPC skip ToolCallChunk).
+// Temporarily hidden â€” no tool calling support (trae SOLO agent / windsurf gRPC skip ToolCallChunk).
 // Re-enable by uncommenting both the import and the array entry below.
 // import p102 from "./trae.js";
 import p103 from "./zed.js";
@@ -195,6 +196,7 @@ export default [
   p67,
   p68,
   p69,
+  pZen,
   p70,
   p71,
   p72,
@@ -225,7 +227,7 @@ export default [
   p98,
   p99,
   p100,
-  // p102, // trae — hidden, no tool calling
+  // p102, // trae â€” hidden, no tool calling
   p103,
   p105,
   p106,
@@ -236,8 +238,8 @@ export default [
   p111,
   p112,
   p113,
-  // p114, // devin-cli — hidden, spawns local agent with shell/fs access
-  // p104, // windsurf — hidden, no tool calling
+  // p114, // devin-cli â€” hidden, spawns local agent with shell/fs access
+  // p104, // windsurf â€” hidden, no tool calling
   p115,
   p116,
   p117,
@@ -248,3 +250,4 @@ export default [
   p122,
   p123,
 ];
+

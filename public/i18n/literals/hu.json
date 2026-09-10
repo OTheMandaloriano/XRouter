@@ -195,5 +195,7 @@
   "⚠️ MITM intercepts HTTPS traffic of IDE tools (Antigravity, GitHub Copilot, Kiro) via local CA to redirect requests to your providers. May violate ToS → account ban. Use at your own risk.": "⚠️ A MITM elfogja az IDE eszközök (Antigravity, GitHub Copilot, Kiro) HTTPS forgalmát helyi CA-n keresztül, hogy átirányítsa a kéréseket a szolgáltatóidhoz. Megsértheti a ToS-t → fiók letiltási kockázat. Saját felelősségre használja.",
   "Endpoint is exposed without an API key.": "A végpont API-kulcs nélkül van kitéve.",
   "Add all": "Összes hozzáadása",
-  "Remove all": "Összes eltávolítása"
+  "Remove all": "Összes eltávolítása",
+  "No active connection. Add a connection to sync directly from the provider API.": "No active connection. Add a connection to sync directly from the provider API.",
+  "Failed to sync: connection returned an error.": "Failed to sync: connection returned an error."
 }

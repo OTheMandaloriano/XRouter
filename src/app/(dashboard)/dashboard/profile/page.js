@@ -695,7 +695,7 @@ export default function ProfilePage() {
     setDbLoading(true);
     setDbStatus({ type: "", message: "" });
     try {
-      const res = await fetch("/api/settings/database", {
+      const res = await fetch("/api/settings/database?format=sqlite", {
         headers: { "x-9r-password": password },
       });
       if (!res.ok) {
@@ -703,20 +703,24 @@ export default function ProfilePage() {
         throw new Error(data.error || "Failed to export database");
       }
 
-      const payload = await res.json();
-      const content = JSON.stringify(payload, null, 2);
-      const blob = new Blob([content], { type: "application/json" });
+      const blob = await res.blob();
+      const disposition = res.headers.get("Content-Disposition");
+      let filename = `xrouter-backup-${new Date().toISOString().replace(/[.:]/g, "-")}.sqlite`;
+      if (disposition && disposition.includes("filename=")) {
+        const match = disposition.match(/filename="?([^"]+)"?/);
+        if (match && match[1]) filename = match[1];
+      }
+
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
-      const stamp = new Date().toISOString().replace(/[.:]/g, "-");
       anchor.href = url;
-      anchor.download = `9router-backup-${stamp}.json`;
+      anchor.download = filename;
       document.body.appendChild(anchor);
       anchor.click();
       document.body.removeChild(anchor);
       URL.revokeObjectURL(url);
 
-      setDbStatus({ type: "success", message: "Database backup downloaded" });
+      setDbStatus({ type: "success", message: "Backup do banco (.sqlite) baixado com sucesso" });
     } catch (err) {
       setDbStatus({ type: "error", message: err.message || "Failed to export database" });
     } finally {
@@ -738,24 +742,52 @@ export default function ProfilePage() {
     if (!file) return;
     setDbLoading(true);
     try {
-      const raw = await file.text();
-      const payload = JSON.parse(raw);
+      const isSqlite = file.name.toLowerCase().endsWith(".sqlite") || file.name.toLowerCase().endsWith(".db");
+      let res;
 
-      const res = await fetch("/api/settings/database", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...payload, password }),
-      });
+      if (isSqlite) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("password", password);
+
+        res = await fetch("/api/settings/database", {
+          method: "POST",
+          body: formData,
+        });
+      } else {
+        const raw = await file.text();
+        let payload = null;
+        try {
+          payload = JSON.parse(raw);
+        } catch {}
+
+        if (payload && typeof payload === "object") {
+          res = await fetch("/api/settings/database", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...payload, password }),
+          });
+        } else {
+          // Fallback to binary form-data if json parse fails
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("password", password);
+          res = await fetch("/api/settings/database", {
+            method: "POST",
+            body: formData,
+          });
+        }
+      }
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data.error || "Failed to import database");
+        throw new Error(data.error || "Falha ao importar backup do banco");
       }
 
       await reloadSettings();
-      setDbStatus({ type: "success", message: "Database imported successfully" });
+      setDbStatus({ type: "success", message: "Banco de dados restaurado com sucesso!" });
     } catch (err) {
-      setDbStatus({ type: "error", message: err.message || "Invalid backup file" });
+      setDbStatus({ type: "error", message: err.message || "Arquivo de backup inválido" });
     } finally {
       pendingImportRef.current = null;
       setDbLoading(false);
@@ -859,7 +891,7 @@ export default function ProfilePage() {
               <input
                 ref={importFileRef}
                 type="file"
-                accept="application/json,.json"
+                accept=".sqlite,.db,.json,application/x-sqlite3,application/json"
                 className="hidden"
                 onChange={handleImportDatabase}
               />

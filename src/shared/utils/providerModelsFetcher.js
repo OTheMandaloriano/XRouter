@@ -6,15 +6,18 @@ const cache = new Map(); // key: fetcher.url → { data, expiresAt }
 
 /**
  * Fetch suggested models for a provider using its modelsFetcher config.
- * Results are cached in-memory for CACHE_TTL_MS.
+ * Results are cached in-memory for CACHE_TTL_MS unless force=true.
  * @param {{ url: string, type: string }} fetcher
+ * @param {{ force?: boolean }} [options]
  * @returns {Promise<Array<{ id: string, name: string, contextLength?: number }>>}
  */
-export async function fetchSuggestedModels(fetcher) {
+export async function fetchSuggestedModels(fetcher, { force = false } = {}) {
   if (!fetcher?.url || !fetcher?.type) return [];
 
-  const cached = cache.get(fetcher.url);
-  if (cached && Date.now() < cached.expiresAt) return cached.data;
+  if (!force) {
+    const cached = cache.get(fetcher.url);
+    if (cached && Date.now() < cached.expiresAt) return cached.data;
+  }
 
   try {
     const params = new URLSearchParams({ url: fetcher.url, type: fetcher.type });

@@ -169,3 +169,39 @@ export async function importDb(payload) {
 export async function initDb() {
   await getAdapter();
 }
+
+import fs from "node:fs";
+import { DATA_FILE } from "./paths.js";
+import { resetAdapter } from "./driver.js";
+
+export { resetAdapter } from "./driver.js";
+
+export async function restoreSqliteDb(buffer) {
+  const header = Buffer.from("SQLite format 3\0");
+  if (!buffer || buffer.length < 16 || !buffer.subarray(0, 16).equals(header)) {
+    throw new Error("Arquivo inválido: não é um banco de dados SQLite válido.");
+  }
+
+  // Safely close existing DB adapter
+  await resetAdapter();
+
+  // Safety backup of existing database
+  if (fs.existsSync(DATA_FILE)) {
+    try {
+      fs.copyFileSync(DATA_FILE, `${DATA_FILE}.pre-import-${Date.now()}`);
+    } catch (e) {
+      console.warn("[DB] safety backup before import failed:", e.message);
+    }
+  }
+
+  // Remove any lingering WAL/SHM files to prevent corruption
+  try { if (fs.existsSync(`${DATA_FILE}-wal`)) fs.unlinkSync(`${DATA_FILE}-wal`); } catch {}
+  try { if (fs.existsSync(`${DATA_FILE}-shm`)) fs.unlinkSync(`${DATA_FILE}-shm`); } catch {}
+
+  // Write the uploaded database
+  fs.writeFileSync(DATA_FILE, buffer);
+
+  // Reconnect adapter and run migrations if needed
+  const newAdapter = await getAdapter();
+  return newAdapter;
+}

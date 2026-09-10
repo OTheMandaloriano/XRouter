@@ -5,6 +5,7 @@ REM  Usa a PASTA DESTE ARQUIVO (sem caminhos fixos). O Headroom sobe junto,
 REM  automaticamente, quando instalado. Sem dados pessoais neste arquivo.
 REM =====================================================================
 cd /d "%~dp0"
+set "DATA_DIR=%USERPROFILE%\Documents\XRouter"
 where npm >nul 2>nul || ( echo [ERRO] Node.js/npm nao encontrado no PATH. Instale o Node 20+ e tente de novo. & pause & exit /b 1 )
 if not exist "node_modules" ( echo Instalando dependencias ^(so na primeira vez, pode demorar^)... & call npm install )
 if exist ".next\BUILD_ID" (

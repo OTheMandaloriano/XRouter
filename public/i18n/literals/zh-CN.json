@@ -1155,7 +1155,7 @@
   "Test model": "测试模型",
   "Test proxy": "测试代理",
   "Test proxy URL": "测试代理 URL",
-  "Testing...": "测试中...",
+  "Testing...": "正在测试...",
   "Text To Speech": "文本转语音",
   "Text To Speech combo": "文本转语音组合",
   "Text to Image": "文本转图像",
@@ -1391,5 +1391,18 @@
   "📝 Configure providers in dashboard or use environment variables": "📝 在仪表盘中配置提供商或使用环境变量",
   "🔐 OAuth required. Add now and authenticate after Apply; tool list will be discovered after first connect.": "🔐 需要 OAuth。立即添加并在应用后认证；工具列表将在首次连接后自动发现。",
   "Add all": "全部添加",
-  "Remove all": "全部移除"
+  "Remove all": "全部移除",
+  "Sync": "同步",
+  "Syncing...": "同步中...",
+  "Synchronized.": "同步完成。",
+  "Failed to sync.": "同步失败。",
+  "Test all": "测试全部",
+  "Stop testing": "停止测试",
+  "Test stopped.": "测试已停止。",
+  "Test all active models of this provider": "测试此提供商的所有活动模型",
+  "Test completed": "测试完成",
+  "working": "正常",
+  "with error": "出错",
+  "No active connection. Add a connection to sync directly from the provider API.": "无活动连接。请添加连接以直接从提供商 API 同步。",
+  "Failed to sync: connection returned an error.": "同步失败：连接返回错误。"
 }

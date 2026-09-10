@@ -1396,5 +1396,7 @@
   "📝 Configure providers in dashboard or use environment variables": "📝 កំណត់អ្នកផ្តល់សេវាក្នុងផ្ទាំងគ្រប់គ្រង ឬប្រើ Environment Variables",
   "🔐 OAuth required. Add now and authenticate after Apply; tool list will be discovered after first connect.": "🔐 ត្រូវការ OAuth។ បន្ថែមឥឡូវ ហើយផ្ទៀងផ្ទាត់បន្ទាប់ពីចុច អនុវត្ត; បញ្ជីឧបករណ៍នឹងត្រូវបានរកឃើញបន្ទាប់ពីការតភ្ជាប់លើកដំបូង។",
   "Add all": "បន្ថែមទាំងអស់",
-  "Remove all": "លុបទាំងអស់"
+  "Remove all": "លុបទាំងអស់",
+  "No active connection. Add a connection to sync directly from the provider API.": "No active connection. Add a connection to sync directly from the provider API.",
+  "Failed to sync: connection returned an error.": "Failed to sync: connection returned an error."
 }
