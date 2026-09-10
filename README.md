@@ -10,16 +10,22 @@
   [![npm](https://img.shields.io/npm/v/9router.svg)](https://www.npmjs.com/package/9router)
   [![Downloads](https://img.shields.io/npm/dm/9router.svg)](https://www.npmjs.com/package/9router)
   [![Docker Pulls](https://img.shields.io/docker/pulls/decolua/9router.svg?logo=docker&label=Docker%20pulls)](https://hub.docker.com/r/decolua/9router)
-  [![GHCR](https://img.shields.io/badge/GHCR-decolua%2F9router-blue?logo=github)](https://github.com/decolua/9router/pkgs/container/9router)
-  [![Licença](https://img.shields.io/npm/l/9router.svg)](https://github.com/decolua/9router/blob/main/LICENSE)
+  [![GHCR](https://img.shields.io/badge/GHCR-decolua%2F9router-blue?logo=github)](https://github.com/OTheMandaloriano/XRouter/pkgs/container/9router)
+  [![Licença](https://img.shields.io/npm/l/9router.svg)](https://github.com/OTheMandaloriano/XRouter/blob/main/LICENSE)
 
 <a href="https://trendshift.io/repositories/22628" target="_blank"><img src="https://trendshift.io/api/badge/repositories/22628" alt="decolua%2F9router | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 
-[🚀 Início rápido](#-início-rápido) • [💡 Recursos](#-principais-recursos) • [📖 Configuração](#-guia-de-configuração) • [🌐 Site](https://9router.com)
+[🚀 Início rápido](#-início-rápido) • [💡 Recursos](#-principais-recursos) • [🌐 Provedores](#-provedores-compatíveis) • [📖 Configuração](#-guia-de-configuração) • [📊 Modelos](#-modelos-disponíveis) • [GitHub](https://github.com/OTheMandaloriano/XRouter)
 
 </div>
 
-> **XRouter** é um fork personalizado do **[9router](https://github.com/decolua/9router)** (MIT). A documentação abaixo é a do projeto original em português, com o **nome adaptado**. Referências a "9router" em links, badges, imagens Docker e caminhos técnicos apontam para o projeto **upstream**. Consulte [NOTICE.md](./NOTICE.md).
+> **XRouter** é um fork aprimorado e personalizado do **[9router](https://github.com/OTheMandaloriano/XRouter)** (MIT). 
+> Mantém compatibilidade total com o ecossistema upstream e adiciona:
+> - 🚀 **Suporte aos novos modelos de 2026**: OpenAI GPT-6 Astra, GPT-5.6 (Sol, Terra, Luna), GPT-5.5, GPT-5.4 Pro, O3, O4 Mini e variantes Codex.
+> - 🔄 **Sincronização ao Vivo de Catálogo (Live Model Sync)**: Busca dinâmica e automática de novos modelos e desativação de modelos descontinuados direto nas APIs dos provedores.
+> - 🧪 **Teste Automatizado de Modelos em Massa (Test All)**: Validação de latência e saúde de todos os modelos do provedor com 1 clique.
+> - 🌐 **Novos Provedores Integrados**: OpenCode Zen, InferX (Devstral/Qwen3), OrcaRouter e correções para Google Antigravity / Gemini 2.5 / 3.x.
+> Consulte [NOTICE.md](./NOTICE.md).
 
 ---
 
@@ -50,7 +56,7 @@
 │  Sua CLI   │  (Claude Code, Codex, OpenClaw, Cursor, Cline...)
 │   Ferramenta│
 └──────┬──────┘
-       │ http://localhost:20128/v1
+       │ http://localhost:20127/v1
        ↓
 ┌─────────────────────────────────────────────┐
 │           XRouter (Roteador inteligente)            │
@@ -80,7 +86,7 @@ npm install -g 9router
 9router
 ```
 
-🎉 O painel abre em `http://localhost:20128`
+🎉 O painel abre em `http://localhost:20127`
 
 **2. Conecte um provedor GRATUITO (sem necessidade de inscrição):**
 
@@ -90,7 +96,7 @@ Painel → Provedores → Conecte **Kiro AI** (~50 créditos/mês grátis: Claud
 
 ```
 Configurações do Claude Code/Codex/OpenClaw/Cursor/Cline:
-  Endpoint: http://localhost:20128/v1
+  Endpoint: http://localhost:20127/v1
   API Key: [copie do painel]
   Model: kr/claude-sonnet-4.5
 ```
@@ -104,20 +110,20 @@ Este pacote de repositório é privado (`9router-app`), portanto, a execução p
 ```bash
 cp .env.example .env
 npm install
-PORT=20128 NEXT_PUBLIC_BASE_URL=http://localhost:20128 npm run dev
+PORT=20127 NEXT_PUBLIC_BASE_URL=http://localhost:20127 npm run dev
 ```
 
 Modo de produção:
 
 ```bash
 npm run build
-PORT=20128 HOSTNAME=0.0.0.0 NEXT_PUBLIC_BASE_URL=http://localhost:20128 npm run start
+PORT=20127 HOSTNAME=0.0.0.0 NEXT_PUBLIC_BASE_URL=http://localhost:20127 npm run start
 ```
 
 URLs padrão:
 
-- Painel: `http://localhost:20128/dashboard`
-- API compatível com OpenAI: `http://localhost:20128/v1`
+- Painel: `http://localhost:20127/dashboard`
+- API compatível com OpenAI: `http://localhost:20127/v1`
 
 ---
 
@@ -132,7 +138,7 @@ O XRouter funciona perfeitamente com todas as principais ferramentas de codifica
 <tr>
       <td align="center" width="120">
         <img src="./public/providers/claude.png" width="60" alt="Claude Code"/><br/>
-        <b>Código-Claude</b>
+        <b>Claude Code</b>
       </td>
       <td align="center" width="120">
         <img src="./public/providers/openclaw.png" width="60" alt="OpenClaw"/><br/>
@@ -152,7 +158,7 @@ O XRouter funciona perfeitamente com todas as principais ferramentas de codifica
       </td>
       <td align="center" width="120">
         <img src="./public/providers/antigravity.png" width="60" alt="Antigravity"/><br/>
-        <b>antigravidade</b>
+        <b>Google Antigravity</b>
 </td>
     </tr>
     <tr>
@@ -221,11 +227,11 @@ O XRouter funciona perfeitamente com todas as principais ferramentas de codifica
 <tr>
       <td align="center" width="120">
         <img src="./public/providers/claude.png" width="60" alt="Claude Code"/><br/>
-        <b>Código-Claude</b>
+        <b>Claude Code</b>
       </td>
       <td align="center" width="120">
         <img src="./public/providers/antigravity.png" width="60" alt="Antigravity"/><br/>
-        <b>antigravidade</b>
+        <b>Google Antigravity</b>
       </td>
       <td align="center" width="120">
         <img src="./public/providers/codex.png" width="60" alt="Codex"/><br/>
@@ -304,7 +310,7 @@ O XRouter funciona perfeitamente com todas as principais ferramentas de codifica
       </td>
       <td align="center" width="100">
         <img src="./public/providers/anthropic.png" width="50" alt="Anthropic"/><br/>
-        <sub>Antrópico</sub>
+        <sub>Anthropic</sub>
       </td>
     </tr>
     <tr>
@@ -330,17 +336,17 @@ O XRouter funciona perfeitamente com todas as principais ferramentas de codifica
       </td>
       <td align="center" width="100">
         <img src="./public/providers/perplexity.png" width="50" alt="Perplexity"/><br/>
-        <sub>Perplexidade</sub>
+        <sub>Perplexity</sub>
       </td>
 </tr>
     <tr>
       <td align="center" width="100">
         <img src="./public/providers/together.png" width="50" alt="Together"/><br/>
-        <sub>Juntos AI</sub>
+        <sub>Together AI</sub>
       </td>
       <td align="center" width="100">
         <img src="./public/providers/fireworks.png" width="50" alt="Fireworks"/><br/>
-        <sub>Fogos de artifício</sub>
+        <sub>Fireworks AI</sub>
       </td>
       <td align="center" width="100">
         <img src="./public/providers/cerebras.png" width="50" alt="Cerebras"/><br/>
@@ -427,6 +433,27 @@ Configure `X-9Router-Token-Saver: off` para ignorar todos os economizadores de t
 
 <details>
 <summary><b>📖 Detalhes do recurso</b></summary>
+
+### 🔄 Sincronização Dinâmica de Catálogo
+
+O XRouter inclui um sistema avançado de reconciliação de modelos em tempo real:
+
+- **Botão "Sincronizar":** Consulta diretamente a API oficial de cada provedor upstream (OpenAI, Codex, Google Antigravity, OpenCode Zen, OrcaRouter, InferX, etc.).
+- **Detecção Instantânea de Novos Modelos:** Quando a OpenAI, Google ou outros provedores lançam novas IAs, clicar em "Sincronizar" adiciona automaticamente os novos modelos à sua lista sem necessidade de atualizar o código.
+- **Limpeza de Modelos Descontinuados:** Remove ou desativa automaticamente modelos fora do ar, evitando que sua CLI fique travada em erros como `HTTP 404: Requested entity was not found` ou `HTTP 400: Invalid argument`.
+- **Bypass Forçado de Cache (`force: true`):** Garante dados frescos direto da fonte a qualquer momento.
+
+---
+
+### ⚡ Teste Automatizado de Modelos em Massa
+
+Chega de testar cada modelo manualmente via CLI para descobrir se ele está ativo:
+
+- **Botão "Testar Todos os Modelos":** Integrado no cabeçalho de cada provedor no painel.
+- **Validação com 1 Clique:** Dispara requisições paralelas e seguras de teste para todos os modelos habilitados na conexão.
+- **Métricas Visuais em Tempo Real:** Exibe o tempo de resposta em milissegundos (latência) com badge verde para modelos funcionais e badge vermelho detalhando o código HTTP de falha caso um modelo esteja indisponível.
+
+---
 
 ### 🚀 RTK Token Saver
 
@@ -605,7 +632,7 @@ Tradução perfeita entre formatos:
 
 ---
 
-### 📊 Compreendendo os custos e faturamento do 9Router
+### 📊 Compreendendo os Custos e Faturamento do XRouter
 
 **Como funciona o faturamento do 9Router:**
 
@@ -1020,7 +1047,7 @@ Custo: $0 (+ economia de 20–40% de tokens com RTK)!
 
 ```
 Configurações → Modelos → Avançado:
-  OpenAI API Base URL: http://localhost:20128/v1
+  OpenAI API Base URL: http://localhost:20127/v1
   OpenAI API Key: [copie do painel do 9Router]
   Model: cc/claude-opus-4-7
 ```
@@ -1033,7 +1060,7 @@ Editar `~/.claude/config.json`:
 
 ```json
 {
-  "anthropic_api_base": "http://localhost:20128/v1",
+  "anthropic_api_base": "http://localhost:20127/v1",
   "anthropic_api_key": "your-9router-api-key"
 }
 ```
@@ -1041,7 +1068,7 @@ Editar `~/.claude/config.json`:
 ### CLI do Codex
 
 ```bash
-export OPENAI_BASE_URL="http://localhost:20128"
+export OPENAI_BASE_URL="http://localhost:20127"
 export OPENAI_API_KEY="your-9router-api-key"
 
 codex "seu prompt"
@@ -1069,7 +1096,7 @@ Painel → Ferramentas CLI → OpenClaw → Selecionar modelo → Aplicar
   "models": {
     "providers": {
       "9router": {
-        "baseUrl": "http://127.0.0.1:20128/v1",
+        "baseUrl": "http://127.0.0.1:20127/v1",
         "apiKey": "sk_9router",
         "api": "openai-completions",
         "models": [
@@ -1090,7 +1117,7 @@ Painel → Ferramentas CLI → OpenClaw → Selecionar modelo → Aplicar
 
 ```
 Provedor: compatível com OpenAI
-Base URL: http://localhost:20128/v1
+Base URL: http://localhost:20127/v1
 API Key: [copie do painel]
 Model: cc/claude-opus-4-7
 ```
@@ -1104,8 +1131,8 @@ Model: cc/claude-opus-4-7
 
 ```bash
 # Clonar e instalar
-git clone https://github.com/decolua/9router.git
-cd 9router
+git clone https://github.com/OTheMandaloriano/XRouter.git
+cd XRouter
 npm install
 npm run build
 
@@ -1113,10 +1140,10 @@ npm run build
 export JWT_SECRET="your-secure-secret-change-this"
 export INITIAL_PASSWORD="your-password"
 export DATA_DIR="/var/lib/9router"
-export PORT="20128"
+export PORT="20127"
 export HOSTNAME="0.0.0.0"
 export NODE_ENV="production"
-export NEXT_PUBLIC_BASE_URL="http://localhost:20128"
+export NEXT_PUBLIC_BASE_URL="http://localhost:20127"
 export NEXT_PUBLIC_CLOUD_URL="https://9router.com"
 export API_KEY_SECRET="endpoint-proxy-api-key-secret"
 export MACHINE_ID_SALT="endpoint-proxy-salt"
@@ -1126,7 +1153,7 @@ npm run start
 
 # Ou usar PM2
 npm install -g pm2
-pm2 start npm --name 9router -- start
+pm2 start npm --name xrouter -- start
 pm2 save
 pm2 startup
 ```
@@ -1136,42 +1163,42 @@ pm2 startup
 Imagens publicadas (multiplataforma `linux/amd64` + `linux/arm64`):
 
 - Hub Docker: [`decolua/9router`](https://hub.docker.com/r/decolua/9router)
-- GHCR: [`ghcr.io/decolua/9router`](https://github.com/decolua/9router/pkgs/container/9router)
+- GHCR: [`ghcr.io/decolua/9router`](https://github.com/OTheMandaloriano/XRouter/pkgs/container/9router)
 
 **Início rápido (use imagem publicada):**
 
 ```bash
 docker run -d \
-  --name 9router \
-  -p 20128:20128 \
+  --name xrouter \
+  -p 20127:20127 \
   -v "$HOME/.9router:/app/data" \
   -e DATA_DIR=/app/data \
   decolua/9router:latest
 ```
 
-→ Abra http://localhost:20128
+→ Abra http://localhost:20127
 
 **Compilar a partir do código-fonte (desenvolvedor):**
 
 ```bash
-git clone https://github.com/decolua/9router.git
-cd 9router/app
+git clone https://github.com/OTheMandaloriano/XRouter.git
+cd XRouter/app
 docker build -t 9router .
-docker run -d --name 9router -p 20128:20128 \
+docker run -d --name xrouter -p 20127:20127 \
   -v "$HOME/.9router:/app/data" -e DATA_DIR=/app/data 9router
 ```
 
 **Padrões do contêiner:**
 
-- `PORT=20128`
+- `PORT=20127`
 - `HOSTNAME=0.0.0.0`
 
 **Comandos úteis:**
 
 ```bash
-docker logs -f 9router
-docker restart 9router
-docker stop 9router && docker rm 9router
+docker logs -f xrouter
+docker restart xrouter
+docker stop xrouter && docker rm xrouter
 docker pull decolua/9router:latest   # atualizar para a versão mais recente
 ```
 
@@ -1184,10 +1211,10 @@ docker pull decolua/9router:latest   # atualizar para a versão mais recente
 | `JWT_SECRET` | Gerado automaticamente (`~/.9router/jwt-secret`) | Segredo de assinatura JWT para cookie de autenticação do painel (substituir para compartilhar entre instâncias) |
 | `INITIAL_PASSWORD` | `123456` | Primeira senha de login quando não existe hash salvo |
 | `DATA_DIR` | `~/.9router` | Localização principal dos dados do aplicativo (SQLite em `$DATA_DIR/db/data.sqlite`) |
-| `PORT` | padrão da estrutura | Porta de serviço (`20128` nos exemplos) |
+| `PORT` | padrão da estrutura | Porta de serviço (`20127` nos exemplos) |
 | `HOSTNAME` | padrão da estrutura | Host de vinculação (o padrão do Docker é `0.0.0.0`) |
 | `NODE_ENV` | padrão de tempo de execução | Definir `production` para implantação |
-| `BASE_URL` | `http://localhost:20128` | URL base interna do lado do servidor usada por trabalhos de sincronização na nuvem |
+| `BASE_URL` | `http://localhost:20127` | URL base interna do lado do servidor usada por trabalhos de sincronização na nuvem |
 | `CLOUD_URL` | `https://9router.com` | URL base do endpoint de sincronização na nuvem do lado do servidor |
 | `NEXT_PUBLIC_BASE_URL` | `http://localhost:3000` | URL de base pública/compatível com versões anteriores (prefira `BASE_URL` para tempo de execução do servidor) |
 | `NEXT_PUBLIC_CLOUD_URL` | `https://9router.com` | URL de nuvem pública/compatível com versões anteriores (prefira `CLOUD_URL` para tempo de execução do servidor) |
@@ -1320,7 +1347,7 @@ Notas:
 
 **Painel abre na porta errada**
 
-- Definir `PORT=20128` e `NEXT_PUBLIC_BASE_URL=http://localhost:20128`
+- Definir `PORT=20127` e `NEXT_PUBLIC_BASE_URL=http://localhost:20127`
 
 **Primeiro login não funciona**
 
@@ -1349,7 +1376,7 @@ Notas:
 ### Chat Completions
 
 ```bash
-POST http://localhost:20128/v1/chat/completions
+POST http://localhost:20127/v1/chat/completions
 Authorization: Bearer your-api-key
 Content-Type: application/json
 
@@ -1365,7 +1392,7 @@ Content-Type: application/json
 ### Listar modelos
 
 ```bash
-GET http://localhost:20128/v1/models
+GET http://localhost:20127/v1/models
 Authorization: Bearer your-api-key
 
 → Retorna todos os modelos e combos no formato OpenAI
@@ -1374,8 +1401,8 @@ Authorization: Bearer your-api-key
 ## 📧 Suporte
 
 - **Site**: [9router.com](https://9router.com)
-- **GitHub**: [github.com/decolua/9router](https://github.com/decolua/9router)
-- **Issues**: [github.com/decolua/9router/issues](https://github.com/decolua/9router/issues)
+- **GitHub**: [github.com/OTheMandaloriano/XRouter](https://github.com/OTheMandaloriano/XRouter)
+- **Issues**: [github.com/OTheMandaloriano/XRouter/issues](https://github.com/OTheMandaloriano/XRouter/issues)
 
 ---
 
