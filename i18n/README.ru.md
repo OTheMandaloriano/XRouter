@@ -114,26 +114,6 @@ URL по умолчанию:
 
 ---
 
-## 🎥 Видео-руководство
-
-<div align="center">
-  
-### 📺 Полное руководство по настройке - 9Router + Claude Code БЕСПЛАТНО
-  
-[![Настройка 9Router + Claude Code](https://img.youtube.com/vi/raEyZPg5xE0/maxresdefault.jpg)](https://www.youtube.com/watch?v=raEyZPg5xE0)
-
-**🎬 Полное пошаговое руководство:**
-- ✅ Установка и настройка 9Router
-- ✅ Настройка Claude Sonnet 4.5 БЕСПЛАТНО
-- ✅ Интеграция с Claude Code
-- ✅ Тестирование кода вживую
-
-**⏱️ Длительность:** 20 минут | **👥 Автор:** Сообщество разработчиков
-
-[▶️ Смотреть на YouTube](https://www.youtube.com/watch?v=o3qYCyjrFYg)
-
-</div>
-
 ---
 
 ## 🛠️ Поддерживаемые CLI-инструменты
@@ -1261,30 +1241,6 @@ OPENAI_API_KEY="your-cloud-key" bash tester/security/test-cloud-openai-compatibl
 - **Сайт**: [9router.com](https://9router.com)
 - **GitHub**: [github.com/decolua/9router](https://github.com/decolua/9router)
 - **Issues**: [github.com/decolua/9router/issues](https://github.com/decolua/9router/issues)
-
----
-
-## 👥 Контрибьюторы
-
-Спасибо всем, кто помогает делать 9Router лучше!
-
-[![Contributors](https://contrib.rocks/image?repo=decolua/9router&max=100&columns=20&anon=1)](https://github.com/decolua/9router/graphs/contributors)
-
----
-
-## 📊 Star Chart
-
-[![Star Chart](https://starchart.cc/decolua/9router.svg?variant=adaptive)](https://starchart.cc/decolua/9router)
-
-### Как внести вклад
-
-1. Сделайте форк репозитория
-2. Создайте свою feature-ветку (`git checkout -b feature/amazing-feature`)
-3. Закоммитьте изменения (`git commit -m 'Add amazing feature'`)
-4. Запушьте в ветку (`git push origin feature/amazing-feature`)
-5. Откройте Pull Request
-
-См. [Pull Requests](https://github.com/decolua/9router/pulls) для подробных инструкций.
 
 ---
 

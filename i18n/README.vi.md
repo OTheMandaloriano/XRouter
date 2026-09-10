@@ -113,27 +113,6 @@ URL mặc định:
 
 ---
 
-
-## 🎥 Hướng dẫn Video
-
-<div align="center">
-  
-### 📺 Hướng dẫn thiết lập hoàn chỉnh - 9Router + Claude Code MIỄN PHÍ
-  
-[![Thiết lập 9Router + Claude Code](https://img.youtube.com/vi/raEyZPg5xE0/maxresdefault.jpg)](https://www.youtube.com/watch?v=raEyZPg5xE0)
-
-**🎬 Xem hướng dẫn từng đầy đủ:**
-- ✅ Cài đặt & thiết lập 9Router
-- ✅ Cấu hình Claude Sonnet 4.5 MIỄN PHÍ
-- ✅ Tích hợp Claude Code
-- ✅ Thử nghiệm code trực tiếp
-
-**⏱️ Thời lượng:** 20 phút | **👥 Bởi:** Cộng đồng Nhà phát triển
-
-[▶️ Xem trên YouTube](https://www.youtube.com/watch?v=o3qYCyjrFYg)
-
-</div>
-
 ---
 
 ## 🛠️ Các công cụ CLI được hỗ trợ
@@ -1258,30 +1237,6 @@ Tài liệu tham khảo kiến trúc đầy đủ: [`docs/ARCHITECTURE.md`](../d
 - **Website**: [9router.com](https://9router.com)
 - **GitHub**: [github.com/decolua/9](https://github.com/decolua/9router)
 - **Issues**: [github.com/decolua/9router/issues](https://github.com/decolua/9router/issues)
-
----
-
-## 👥 Người đóng góp
-
-Cảm ơn tất cả những người đã đóng góp giúp 9Router tốt hơn!
-
-[![Contributors](https://contrib.rocks/image?repo=decolua/9router&max=100&columns=20&anon=1)](https://github.com/decolua/9router/graphs/contributors)
-
----
-
-## 📊 Star Chart
-
-[![ Chart](https://starchart.cc/decolua/9router.svg?variant=adaptive)](https://starchart.cc/decolua/9router)
-
-### Cách Đóng góp
-
-1. Fork kho lưu trữ
-2. Tạo nhánh tính năng của bạn (`git checkout -b feature/amazing-feature`)
-3. Commit các thay đổi của bạn (`git commit -m 'Add amazing feature'`)
-4. Push lên nhánh (`git push origin feature/amazing-feature`)
-5. Mở một Pull Request
-
-Xem [Pull Requests](https://github.com/decolua/9router/pulls) để biết hướng dẫn chi tiết.
 
 ---
 

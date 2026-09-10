@@ -704,14 +704,6 @@ Authorization: Bearer your-api-key
 
 ---
 
-## 👥 ผู้มีส่วนร่วม
-
-ขอขอบคุณผู้มีส่วนร่วมทุกคนที่ช่วยทำให้ 9Router ดียิ่งขึ้น!
-
-[![Contributors](https://contrib.rocks/image?repo=decolua/9router&max=150&columns=15&anon=1)](https://github.com/decolua/9router/graphs/contributors)
-
----
-
 ## 📄 ลิขสิทธิ์
 
 MIT License - ดู [LICENSE](../LICENSE) สำหรับรายละเอียด

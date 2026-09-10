@@ -112,26 +112,6 @@ PORT=20128 HOSTNAME=0.0.0.0 NEXT_PUBLIC_BASE_URL=http://localhost:20128 npm run 
 
 ---
 
-## 🎥 動画チュートリアル
-
-<div align="center">
-
-### 📺 完全セットアップガイド - 9Router + Claude Code 無料
-
-[![9Router + Claude Code Setup](https://img.youtube.com/vi/raEyZPg5xE0/maxresdefault.jpg)](https://www.youtube.com/watch?v=raEyZPg5xE0)
-
-**🎬 ステップバイステップのチュートリアルを視聴：**
-- ✅ 9Routerのインストールとセットアップ
-- ✅ 無料Claude Sonnet 4.5の設定
-- ✅ Claude Codeとの統合
-- ✅ ライブコーディングデモ
-
-**⏱️ 所要時間:** 20分 | **👥 作成:** Developer Community
-
-[▶️ YouTubeで視聴](https://www.youtube.com/watch?v=o3qYCyjrFYg)
-
-</div>
-
 ---
 
 ## 🛠️ 対応CLIツール
@@ -1171,20 +1151,6 @@ Authorization: Bearer your-api-key
 - **Issues**: [github.com/decolua/9router/issues](https://github.com/decolua/9router/issues)
 
 ---
-
-## 👥 コントリビューター
-
-9Routerの改善に貢献してくださったすべてのコントリビューターに感謝します！
-
-[![Contributors](https://contrib.rocks/image?repo=decolua/9router&max=150&columns=15&anon=1&v=20260309)](https://github.com/decolua/9router/graphs/contributors)
-
----
-
-## 📊 スターチャート
-
-[![Star Chart](https://starchart.cc/decolua/9router.svg?variant=adaptive)](https://starchart.cc/decolua/9router)
-
-
 
 ## 🔀 フォーク
 

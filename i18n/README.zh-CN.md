@@ -115,26 +115,6 @@ PORT=20128 HOSTNAME=0.0.0.0 NEXT_PUBLIC_BASE_URL=http://localhost:20128 npm run 
 
 ---
 
-## 🎥 视频教程
-
-<div align="center">
-  
-### 📺完整设置指南 - 9Router + Claude Code 免费
-  
-[![9Router + Claude Code Setup](https://img.youtube.com/vi/raEyZPg5xE0/maxresdefault.jpg)](https://www.youtube.com/watch?v=raEyZPg5xE0)
-
-**🎬 观看完整的分步教程：**
-- ✅ 9Router 安装与设置
-- ✅ 免费 Claude Sonnet 4.5 配置
-- ✅ Claude Code 集成
-- ✅ 实时编程演示
-
-**⏱️ 时长：** 20 分钟 | **👥 作者** 开发者社区
-
-[▶️ 在 YouTube 上观看](https://www.youtube.com/watch?v=o3qYCyjrFYg)
-
-</div>
-
 ---
 
 ## 🛠️ 支持的 CLI 工具
@@ -1257,30 +1237,6 @@ OPENAI_API_KEY="your-cloud-key" bash tester/security/test-cloud-openai-compatibl
 - **网站**：[9router.com](https://9router.com)
 - **GitHub**：[github.com/decolua/9router](https://github.com/decolua/9router)
 - **问题**：[github.com/decolua/9router/issues](https://github.com/decolua/9router/issues)
-
----
-
-## 👥 贡献者
-
-感谢所有帮助让 9Router 变得更好的贡献者！
-
-[![Contributors](https://contrib.rocks/image?repo=decolua/9router&max=100&columns=20&anon=1)](https://github.com/decolua/9router/graphs/contributors)
-
----
-
-## 📊 Star 图表
-
-[![Star Chart](https://starchart.cc/decolua/9router.svg?variant=adaptive)](https://starchart.cc/decolua/9router)
-
-### 如何贡献
-
-1. Fork 仓库
-2. 创建您的功能分支（`git checkout -b feature/amazing-feature`）
-3. 提交您的更改（`git commit -m 'Add amazing feature'`）
-4 推送到分支（`git push origin feature/amazing-feature`）
-5. 打开 Pull Request
-
-详细指南请参阅 [Pull Requests](https://github.com/decolua/9router/pulls)。
 
 ---
 
