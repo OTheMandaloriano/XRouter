@@ -69,7 +69,8 @@
             "output": 32000
           }
         }
-      }
+      },
+      "id": "xai"
     },
     "xrouter-antigravity": {
       "npm": "@ai-sdk/openai-compatible",
@@ -119,7 +120,8 @@
             "output": 32000
           }
         }
-      }
+      },
+      "id": "xai"
     },
     "xrouter-free": {
       "npm": "@ai-sdk/openai-compatible",
@@ -189,7 +191,8 @@
             "output": 16000
           }
         }
-      }
+      },
+      "id": "xai"
     }
   },
   "model": "xrouter-combos/best-coding"
