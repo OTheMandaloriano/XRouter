@@ -71,6 +71,13 @@ export function capabilitiesFromServiceKind(kind) {
  * otherwise mis-match. Only declare deltas vs DEFAULT.
  */
 export const MODEL_CAPABILITIES = {
+  // Virtual Combos
+  "best-coding":       { vision: true, pdf: true, search: true, tools: true, reasoning: true, contextWindow: 1000000, maxOutput: 128000 },
+  "best-reasoning":    { vision: true, pdf: true, search: true, tools: true, reasoning: true, contextWindow: 1000000, maxOutput: 65536 },
+  "best-fast":         { vision: true, pdf: true, search: true, tools: true, reasoning: false, contextWindow: 1048576, maxOutput: 65536 },
+  "best-free":         { vision: true, pdf: false, search: false, tools: true, reasoning: true, contextWindow: 1000000, maxOutput: 131072 },
+  "auto-free":         { vision: true, pdf: false, search: false, tools: true, reasoning: true, contextWindow: 1000000, maxOutput: 64000 },
+  "cheap":             { vision: false, pdf: false, search: false, tools: true, reasoning: false, contextWindow: 1000000, maxOutput: 64000 },
   // Claude Opus 5, 4.6/4.7/4.8, and Kiro Sonnet 5 have 1M context + adaptive thinking (override generic claude pattern)
   "claude-opus-5":     { vision: true, reasoning: true, search: true, thinkingFormat: "claude-adaptive", contextWindow: 1000000, maxOutput: 128000 },
   "claude-opus-5-thinking": { vision: true, reasoning: true, search: true, thinkingFormat: "claude-adaptive", contextWindow: 1000000, maxOutput: 128000 },

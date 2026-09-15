@@ -303,6 +303,12 @@ export async function buildModelsList(kindFilter, options = {}) {
     if (combo.kind === "webSearch" || combo.kind === "webFetch") {
       entry.kind = combo.kind;
     }
+    const caps = getCapabilitiesForModel("combo", combo.name);
+    if (caps) {
+      entry.capabilities = caps;
+      if (Number.isFinite(caps.contextWindow)) entry.context_length = caps.contextWindow;
+      if (Number.isFinite(caps.maxOutput)) entry.max_completion_tokens = caps.maxOutput;
+    }
     models.push(entry);
   }
 
