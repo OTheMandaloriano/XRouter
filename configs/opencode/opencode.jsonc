@@ -1,16 +1,16 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "provider": {
-    "9router": {
+    "xrouter-combos": {
       "npm": "@ai-sdk/openai-compatible",
-      "name": "XRouter",
+      "name": "XRouter • Combos",
       "options": {
         "baseURL": "http://localhost:20127/v1",
         "apiKey": "sk-sua-chave-xrouter-aqui"
       },
       "models": {
         "best-coding": {
-          "name": "XRouter - [Combo] Best Coding (Claude + Gemini + Fallbacks Free)",
+          "name": "Best Coding (Auto Fallback)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -30,7 +30,7 @@
           }
         },
         "best-reasoning": {
-          "name": "XRouter - [Combo] Best Reasoning (Opus Thinking + DeepSeek)",
+          "name": "Best Reasoning (Thinking)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -50,7 +50,7 @@
           }
         },
         "best-fast": {
-          "name": "XRouter - [Combo] Best Fast (Ling 3.0 + Gemini Low Latency)",
+          "name": "Best Fast (Ultra Rápido)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -70,7 +70,7 @@
           }
         },
         "best-free": {
-          "name": "XRouter - [Combo] Best Free (DeepSeek + Zen + Orca + Kilo)",
+          "name": "Best Free (100% Gratuito)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -90,7 +90,7 @@
           }
         },
         "auto-free": {
-          "name": "XRouter - [Combo] Auto Free (Equilíbrio Inteligente Free)",
+          "name": "Auto Free (Equilíbrio)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -110,7 +110,7 @@
           }
         },
         "cheap": {
-          "name": "XRouter - [Combo] Cheap (Econômico / Tarefas Leves)",
+          "name": "Cheap (Econômico)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -128,9 +128,19 @@
             "context": 200000,
             "output": 32000
           }
-        },
+        }
+      }
+    },
+    "xrouter-antigravity": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "XRouter • Antigravity",
+      "options": {
+        "baseURL": "http://localhost:20127/v1",
+        "apiKey": "sk-sua-chave-xrouter-aqui"
+      },
+      "models": {
         "ag/claude-sonnet-4-6": {
-          "name": "XRouter - [Antigravity] Claude Sonnet 4.6 (Thinking)",
+          "name": "Claude Sonnet 4.6 (Thinking)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -150,7 +160,7 @@
           }
         },
         "ag/claude-opus-4-6-thinking": {
-          "name": "XRouter - [Antigravity] Claude Opus 4.6 (Thinking)",
+          "name": "Claude Opus 4.6 (Thinking)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -170,7 +180,7 @@
           }
         },
         "ag/gemini-3.8-flash-high": {
-          "name": "XRouter - [Antigravity] Gemini 3.8 Flash High",
+          "name": "Gemini 3.8 Flash (High)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -190,7 +200,7 @@
           }
         },
         "ag/gemini-3.8-flash-medium": {
-          "name": "XRouter - [Antigravity] Gemini 3.8 Flash Medium",
+          "name": "Gemini 3.8 Flash (Medium)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -210,7 +220,7 @@
           }
         },
         "ag/gemini-3.8-flash-low": {
-          "name": "XRouter - [Antigravity] Gemini 3.8 Flash Low",
+          "name": "Gemini 3.8 Flash (Low)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -230,7 +240,7 @@
           }
         },
         "ag/gemini-3.7-flash-high": {
-          "name": "XRouter - [Antigravity] Gemini 3.7 Flash High",
+          "name": "Gemini 3.7 Flash (High)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -250,7 +260,7 @@
           }
         },
         "ag/gemini-3.7-flash-medium": {
-          "name": "XRouter - [Antigravity] Gemini 3.7 Flash Medium",
+          "name": "Gemini 3.7 Flash (Medium)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -270,7 +280,7 @@
           }
         },
         "ag/gemini-3.7-flash-low": {
-          "name": "XRouter - [Antigravity] Gemini 3.7 Flash Low",
+          "name": "Gemini 3.7 Flash (Low)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -290,7 +300,7 @@
           }
         },
         "ag/gemini-3.6-flash-high": {
-          "name": "XRouter - [Antigravity] Gemini 3.6 Flash High",
+          "name": "Gemini 3.6 Flash (High)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -310,7 +320,7 @@
           }
         },
         "ag/gemini-3.1-pro-high": {
-          "name": "XRouter - [Antigravity] Gemini 3.1 Pro High",
+          "name": "Gemini 3.1 Pro (High)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -330,7 +340,7 @@
           }
         },
         "ag/gemini-3.1-pro-low": {
-          "name": "XRouter - [Antigravity] Gemini 3.1 Pro Low",
+          "name": "Gemini 3.1 Pro (Low)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -350,7 +360,7 @@
           }
         },
         "ag/gemini-2.5-pro": {
-          "name": "XRouter - [Antigravity] Gemini 2.5 Pro",
+          "name": "Gemini 2.5 Pro",
           "attachment": true,
           "modalities": {
             "input": [
@@ -370,7 +380,7 @@
           }
         },
         "ag/gemini-2.5-flash-thinking": {
-          "name": "XRouter - [Antigravity] Gemini 2.5 Flash Thinking",
+          "name": "Gemini 2.5 Flash Thinking",
           "attachment": true,
           "modalities": {
             "input": [
@@ -388,9 +398,19 @@
             "context": 200000,
             "output": 32000
           }
-        },
+        }
+      }
+    },
+    "xrouter-zen": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "XRouter • OpenCode Zen (Free)",
+      "options": {
+        "baseURL": "http://localhost:20127/v1",
+        "apiKey": "sk-sua-chave-xrouter-aqui"
+      },
+      "models": {
         "zen/ling-3.0-flash-fin-free": {
-          "name": "XRouter - [OpenCode Zen] Ling 3.0 Flash Fin (Free)",
+          "name": "Ling 3.0 Flash Fin (Free)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -410,7 +430,7 @@
           }
         },
         "zen/nemotron-3.5-lightning-free": {
-          "name": "XRouter - [OpenCode Zen] Nemotron 3.5 Lightning (Free)",
+          "name": "Nemotron 3.5 Lightning (Free)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -430,7 +450,7 @@
           }
         },
         "zen/nemotron-3-ultra-free": {
-          "name": "XRouter - [OpenCode Zen] Nemotron 3 Ultra (Free)",
+          "name": "Nemotron 3 Ultra (Free)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -450,7 +470,7 @@
           }
         },
         "zen/big-pickle": {
-          "name": "XRouter - [OpenCode Zen] Big Pickle (Free)",
+          "name": "Big Pickle (Free)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -470,7 +490,7 @@
           }
         },
         "zen/mimo-v2.5-free": {
-          "name": "XRouter - [OpenCode Zen] MiMo 2.5 (Free)",
+          "name": "MiMo 2.5 (Free)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -490,7 +510,7 @@
           }
         },
         "zen/muse-spark-1.3-contributor-free": {
-          "name": "XRouter - [OpenCode Zen] Muse Spark 1.3 Contributor (Free)",
+          "name": "Muse Spark 1.3 Contributor (Free)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -507,9 +527,19 @@
             "context": 64000,
             "output": 8000
           }
-        },
+        }
+      }
+    },
+    "xrouter-orca": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "XRouter • OrcaRouter (Free)",
+      "options": {
+        "baseURL": "http://localhost:20127/v1",
+        "apiKey": "sk-sua-chave-xrouter-aqui"
+      },
+      "models": {
         "orca/deepseek/deepseek-v4-flash-free": {
-          "name": "XRouter - [OrcaRouter] DeepSeek V4 Flash (Free)",
+          "name": "DeepSeek V4 Flash (Free)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -529,7 +559,7 @@
           }
         },
         "orca/z-ai/glm-5.3-flash-free": {
-          "name": "XRouter - [OrcaRouter] GLM 5.3 Flash (Free)",
+          "name": "GLM 5.3 Flash (Free)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -549,7 +579,7 @@
           }
         },
         "orca/tencent/hy3-free": {
-          "name": "XRouter - [OrcaRouter] Tencent HY3 (Free)",
+          "name": "Tencent HY3 (Free)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -569,7 +599,7 @@
           }
         },
         "orca/orcarouter/free": {
-          "name": "XRouter - [OrcaRouter] OrcaRouter Auto (Free)",
+          "name": "OrcaRouter Auto (Free)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -587,9 +617,19 @@
             "context": 128000,
             "output": 16000
           }
-        },
+        }
+      }
+    },
+    "xrouter-inferx": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "XRouter • InferX",
+      "options": {
+        "baseURL": "http://localhost:20127/v1",
+        "apiKey": "sk-sua-chave-xrouter-aqui"
+      },
+      "models": {
         "ix/deepseek-v4.1-flash": {
-          "name": "XRouter - [InferX] DeepSeek V4.1 Flash",
+          "name": "DeepSeek V4.1 Flash",
           "attachment": true,
           "modalities": {
             "input": [
@@ -609,7 +649,7 @@
           }
         },
         "ix/Devstral-2-123B-Instruct-2512-int4-AutoRound": {
-          "name": "XRouter - [InferX] Devstral 2 123B Instruct",
+          "name": "Devstral 2 123B Instruct",
           "attachment": true,
           "modalities": {
             "input": [
@@ -629,7 +669,7 @@
           }
         },
         "ix/Qwen3-Coder-Next-FP8": {
-          "name": "XRouter - [InferX] Qwen3 Coder Next FP8",
+          "name": "Qwen3 Coder Next FP8",
           "attachment": true,
           "modalities": {
             "input": [
@@ -649,7 +689,7 @@
           }
         },
         "ix/glm-5.3-flash": {
-          "name": "XRouter - [InferX] GLM 5.3 Flash",
+          "name": "GLM 5.3 Flash",
           "attachment": true,
           "modalities": {
             "input": [
@@ -669,7 +709,7 @@
           }
         },
         "ix/gemma-4-31B-it-fp8": {
-          "name": "XRouter - [InferX] Gemma 4 31B IT",
+          "name": "Gemma 4 31B IT",
           "attachment": true,
           "modalities": {
             "input": [
@@ -687,9 +727,19 @@
             "context": 128000,
             "output": 16000
           }
-        },
+        }
+      }
+    },
+    "xrouter-kilo": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "XRouter • Kilo & OpenRouter (Free)",
+      "options": {
+        "baseURL": "http://localhost:20127/v1",
+        "apiKey": "sk-sua-chave-xrouter-aqui"
+      },
+      "models": {
         "kc/cohere/north-mini-code:free": {
-          "name": "XRouter - [KiloCode] Cohere North Mini Code (Free)",
+          "name": "Cohere North Mini Code (Free)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -709,7 +759,7 @@
           }
         },
         "kc/nvidia/nemotron-3-ultra-550b-a55b:free": {
-          "name": "XRouter - [KiloCode] Nemotron 3 Ultra 550B (Free)",
+          "name": "Nemotron 3 Ultra 550B (Free)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -729,7 +779,7 @@
           }
         },
         "kgw/kilo-auto/free": {
-          "name": "XRouter - [KiloCode] Kilo Auto (Free)",
+          "name": "Kilo Auto (Free)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -749,7 +799,7 @@
           }
         },
         "openrouter/openrouter/free": {
-          "name": "XRouter - [OpenRouter] OpenRouter Auto (Free)",
+          "name": "OpenRouter Auto (Free)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -769,7 +819,7 @@
           }
         },
         "openrouter/nvidia/nemotron-3.5-lightning:free": {
-          "name": "XRouter - [OpenRouter] Nemotron 3.5 Lightning (Free)",
+          "name": "Nemotron 3.5 Lightning (Free)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -789,7 +839,7 @@
           }
         },
         "openrouter/poolside/laguna-s-2.1:free": {
-          "name": "XRouter - [OpenRouter] Poolside Laguna S 2.1 (Free)",
+          "name": "Poolside Laguna S 2.1 (Free)",
           "attachment": true,
           "modalities": {
             "input": [
@@ -810,24 +860,5 @@
         }
       }
     }
-  },
-  "mcp": {
-    "browsermcp": {
-      "type": "local",
-      "command": [
-        "C:\\Program Files\\nodejs\\node.exe",
-        "D:\\Projeto\\MCP\\browsermcp\\node_modules\\@browsermcp\\mcp\\dist\\index.js"
-      ],
-      "enabled": true
-    },
-    "cheatengine": {
-      "type": "local",
-      "command": [
-        "python",
-        "C:\\Program Files\\Cheat Engine\\MCP_Server\\mcp_cheatengine.py"
-      ],
-      "enabled": true
-    }
-  },
-  "model": "9router/best-coding"
+  }
 }
