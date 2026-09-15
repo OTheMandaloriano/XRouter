@@ -24,7 +24,10 @@
 > - 🚀 **Suporte aos novos modelos de 2026**: OpenAI GPT-6 Astra, GPT-5.6 (Sol, Terra, Luna), GPT-5.5, GPT-5.4 Pro, O3, O4 Mini e variantes Codex.
 > - 🔄 **Sincronização ao Vivo de Catálogo (Live Model Sync)**: Busca dinâmica e automática de novos modelos e desativação de modelos descontinuados direto nas APIs dos provedores.
 > - 🧪 **Teste Automatizado de Modelos em Massa (Test All)**: Validação de latência e saúde de todos os modelos do provedor com 1 clique.
-> - 🌐 **Novos Provedores Integrados**: OpenCode Zen, InferX (Devstral/Qwen3), OrcaRouter e correções para Google Antigravity / Gemini 2.5 / 3.x.
+> - 🌐 **OpenCode Zen com Free Tier & Injeção de Sessão**: Sincronização inteligente dos modelos gratuitos (`big-pickle`, `mimo-v2.5-free`, `ling-3.0-flash-fin-free`, `nemotron-3-ultra-free`, `nemotron-3.5-lightning-free`, `muse-spark-1.3-contributor-free`), eliminando erros de créditos (401) e `MissingSessionID` (400).
+> - 🧠 **Suporte Nativo a Reasoning Effort (Pensamento)**: Suporte visual e dinâmico aos níveis de raciocínio do OpenCode (`Default`, `Minimal`, `Low`, `Medium`, `High`, `Xhigh`) com tradução em tempo real para Anthropic thinking budget, Gemini thinkingBudget e DeepSeek/OpenAI reasoning_effort.
+> - 🔀 **Combos Turbinados com Fallback em Cascata**: Até 16 modelos encadeados por combo (`best-coding`, `best-reasoning`, `best-fast`, `best-free`, `auto-free`, `cheap`) com alternância transparente e zero tempo de inatividade.
+> - 📂 **Templates Prontos para Clientes**: Arquivos de configuração de exemplo em [`configs/`](./configs/) para OpenCode e outras ferramentas.
 > Consulte [NOTICE.md](./NOTICE.md).
 
 ---

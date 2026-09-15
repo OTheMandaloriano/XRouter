@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { getProviderConnectionById, getProviderConnections } from "@/models";
 import { isOpenAICompatibleProvider, isAnthropicCompatibleProvider } from "@/shared/constants/providers";
@@ -344,7 +345,39 @@ const PROVIDER_MODELS_CONFIG = {
       return { models };
     }
   },
-  "opencode-zen": createOpenAIModelsConfig("https://opencode.ai/zen/v1/models"),
+  "opencode-zen": {
+    url: "https://opencode.ai/zen/v1/models",
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "x-opencode-client": "desktop"
+    },
+    authHeader: "Authorization",
+    authPrefix: "Bearer ",
+    parseResponse: (data) => {
+      const list = parseOpenAIStyleModels(data);
+      const KNOWN_FREE = [
+        "big-pickle",
+        "mimo-v2.5-free",
+        "ling-3.0-flash-fin-free",
+        "nemotron-3-ultra-free",
+        "nemotron-3.5-lightning-free",
+        "muse-spark-1.3-contributor-free",
+        "muse-spark-1.2-contributor-free",
+      ];
+      return list
+        .filter((m) => {
+          const id = m?.id;
+          if (!id) return false;
+          if (id === "deepseek-v4-flash-free") return false;
+          return id.endsWith("-free") || id.endsWith(":free") || KNOWN_FREE.includes(id);
+        })
+        .map((m) => ({
+          ...m,
+          type: "llm"
+        }));
+    }
+  },
   opencode: createOpenAIModelsConfig("https://opencode.ai/zen/v1/models"),
   "opencode-go": createOpenAIModelsConfig("https://opencode.ai/zen/go/v1/models"),
   kilocode: createOpenAIModelsConfig("https://api.kilo.ai/api/gateway/models"),

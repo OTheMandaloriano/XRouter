@@ -1,6 +1,16 @@
 // Free OpenCode models that don't use the "-free" id suffix
 const KNOWN_FREE_OPENCODE_MODELS = ["big-pickle"];
 
+const KNOWN_FREE_ZEN_MODELS = [
+  "big-pickle",
+  "mimo-v2.5-free",
+  "ling-3.0-flash-fin-free",
+  "nemotron-3-ultra-free",
+  "nemotron-3.5-lightning-free",
+  "muse-spark-1.3-contributor-free",
+  "muse-spark-1.2-contributor-free",
+];
+
 export const FILTERS = {
   "openrouter-free": (models) =>
     models
@@ -43,6 +53,12 @@ export const FILTERS = {
 
   "opencode-zen": (models) =>
     (Array.isArray(models) ? models : [])
+      .filter((m) => {
+        const id = typeof m === "string" ? m : m?.id;
+        if (!id) return false;
+        if (id === "deepseek-v4-flash-free") return false; // Model is unavailable upstream
+        return id.endsWith("-free") || id.endsWith(":free") || KNOWN_FREE_ZEN_MODELS.includes(id);
+      })
       .map((m) => ({ id: m.id, name: m.name || m.id })),
 
   // models.dev returns a large catalog; keep only mimo models
