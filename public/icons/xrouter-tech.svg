@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Dynamic Routing Path 1 (Top-Left to Bottom-Right) -->
+  <path d="M 22 18 L 36 18 L 78 82 L 64 82 Z" fill="#E2E8F0" rx="3"/>
+  <!-- Dynamic Routing Path 2 (Top-Right to Bottom-Left) with Bridge Offset -->
+  <path d="M 78 18 L 64 18 L 54 36 L 61 46 L 78 18 Z" fill="#E2E8F0"/>
+  <path d="M 22 82 L 36 82 L 46 64 L 39 54 L 22 82 Z" fill="#E2E8F0"/>
+  <!-- Router Node Dots (Monochrome) -->
+  <circle cx="29" cy="18" r="4" fill="#E2E8F0"/>
+  <circle cx="71" cy="82" r="4" fill="#E2E8F0"/>
+  <circle cx="71" cy="18" r="4" fill="#CBD5E1"/>
+  <circle cx="29" cy="82" r="4" fill="#CBD5E1"/>
+</svg>
