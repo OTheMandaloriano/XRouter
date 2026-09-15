@@ -5,7 +5,7 @@
       "name": "XRouter • Combos",
       "options": {
         "baseURL": "http://localhost:20127/v1",
-        "apiKey": "sk-bcbab5b2d7b40c06-gn1rvj-2b9346d8"
+        "apiKey": "YOUR_XROUTER_API_KEY"
       },
       "models": {
         "best-coding": {
@@ -130,12 +130,83 @@
       },
       "id": "xai"
     },
+    "xrouter-anthropic": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "XRouter • Anthropic (Oficial)",
+      "options": {
+        "baseURL": "http://localhost:20127/v1",
+        "apiKey": "YOUR_XROUTER_API_KEY"
+      },
+      "id": "xai",
+      "models": {
+        "cc/claude-sonnet-4-6": {
+          "name": "Claude Sonnet 4.6 (Anthropic)",
+          "attachment": true,
+          "modalities": {
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "reasoning": true,
+          "temperature": true,
+          "tool_call": true,
+          "limit": {
+            "context": 1000000,
+            "output": 128000
+          }
+        },
+        "cc/claude-opus-4-6": {
+          "name": "Claude Opus 4.6 (Anthropic)",
+          "attachment": true,
+          "modalities": {
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "reasoning": true,
+          "temperature": true,
+          "tool_call": true,
+          "limit": {
+            "context": 200000,
+            "output": 64000
+          }
+        },
+        "cc/claude-haiku-4-5-20251001": {
+          "name": "Claude Haiku 4.5 (Anthropic)",
+          "attachment": true,
+          "modalities": {
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "reasoning": false,
+          "temperature": true,
+          "tool_call": true,
+          "limit": {
+            "context": 200000,
+            "output": 64000
+          }
+        }
+      }
+    },
     "xrouter-antigravity": {
       "npm": "@ai-sdk/openai-compatible",
       "name": "XRouter • Antigravity",
       "options": {
         "baseURL": "http://localhost:20127/v1",
-        "apiKey": "sk-bcbab5b2d7b40c06-gn1rvj-2b9346d8"
+        "apiKey": "YOUR_XROUTER_API_KEY"
       },
       "models": {
         "ag/claude-sonnet-4-6": {
@@ -406,7 +477,7 @@
       "name": "XRouter • OpenCode Zen (Free)",
       "options": {
         "baseURL": "http://localhost:20127/v1",
-        "apiKey": "sk-bcbab5b2d7b40c06-gn1rvj-2b9346d8"
+        "apiKey": "YOUR_XROUTER_API_KEY"
       },
       "models": {
         "zen/ling-3.0-flash-fin-free": {
@@ -532,7 +603,7 @@
       "name": "XRouter • OrcaRouter (Free)",
       "options": {
         "baseURL": "http://localhost:20127/v1",
-        "apiKey": "sk-bcbab5b2d7b40c06-gn1rvj-2b9346d8"
+        "apiKey": "YOUR_XROUTER_API_KEY"
       },
       "models": {
         "orca/deepseek/deepseek-v4-flash-free": {
@@ -619,7 +690,7 @@
       "name": "XRouter • InferX",
       "options": {
         "baseURL": "http://localhost:20127/v1",
-        "apiKey": "sk-bcbab5b2d7b40c06-gn1rvj-2b9346d8"
+        "apiKey": "YOUR_XROUTER_API_KEY"
       },
       "models": {
         "ix/deepseek-v4.1-flash": {
@@ -726,7 +797,7 @@
       "name": "XRouter • Kilo & OpenRouter (Free)",
       "options": {
         "baseURL": "http://localhost:20127/v1",
-        "apiKey": "sk-bcbab5b2d7b40c06-gn1rvj-2b9346d8"
+        "apiKey": "YOUR_XROUTER_API_KEY"
       },
       "models": {
         "kc/cohere/north-mini-code:free": {
